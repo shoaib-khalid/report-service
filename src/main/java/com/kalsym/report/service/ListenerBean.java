@@ -91,7 +91,7 @@ public class ListenerBean {
                         authority.setId(requestMappingInfo.getName());
                         authority.setName(handlerMethod.getMethod().getName());
                         authority.setDescription(requestMappingInfo.toString());
-                        authority.setServiceId("product-service");
+                        authority.setServiceId("report-service");
 
                         if (null != authority.getId()) {
                             authorities.add(authority);
