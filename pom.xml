@@ -68,6 +68,11 @@
             <version>2.9.2</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20210307</version>
+        </dependency>
        
     </dependencies>
     <build>
@@ -103,17 +108,17 @@
                             </mainClass>
                         </manifest>
                     </archive>
-                    <include resource="logback.xml"/>
+<!--                    <include resource="logback.xml"/>-->
                 </configuration>
             </plugin>
         </plugins>
         <resources>
             <resource>
                 <filtering>true</filtering>
-                <directory>./</directory>
+                <directory>C:\Users\kumar\Desktop\Project Related Files\Kalsym\report-service\src\main\resources\</directory>
                 <includes>
                     <include>application.properties</include>
-                    <include resource="logback.xml"/>
+<!--                    <include resource="logback.xml"/>-->
                 </includes>
             </resource>
         </resources>
