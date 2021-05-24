@@ -43,32 +43,33 @@ public class ReportController {
     @Autowired
     OrderItemRepository orderItemRepository;
 
-    @PostMapping(value = "store/{storeId}/report/dailySales", name = "store-report-dailySale-get")
-    public ResponseEntity<HttpResponse> dailySales(HttpServletRequest request, @RequestBody SalesReport dailySalesReport, @PathVariable("storeId") String storeId) throws Exception {
+    @GetMapping(value = "store/{storeId}/report/dailySales", name = "store-report-dailySale-get")
+    public ResponseEntity<HttpResponse> dailySales
+            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        long diffInMillis = myFormat.parse(dailySalesReport.getEndDate()).getTime() - myFormat.parse(dailySalesReport.getStartDate()).getTime();
+        long diffInMillis = myFormat.parse(endDate).getTime() - myFormat.parse(startDate).getTime();
         long diff = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
         Set<Response.DailySalesReportResponse> reportResponseList = new HashSet<>();
         for (int i = 0; i <= diff; i++) {
-            Calendar startDate = Calendar.getInstance();
+            Calendar sDate = Calendar.getInstance();
             try {
-                startDate.setTime(myFormat.parse(dailySalesReport.getStartDate().toString()));
+                sDate.setTime(myFormat.parse(startDate));
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            startDate.add(Calendar.DAY_OF_MONTH, i);
-            String stDate = myFormat.format(startDate.getTime()) + " 00:00:00";
-            String endDate = myFormat.format(startDate.getTime()) + " 23:59:59";
+            sDate.add(Calendar.DAY_OF_MONTH, i);
+            String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
+            String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
 
-            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, endDate, "SUCCESS");
-//            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBefore(storeId, stDate, endDate);
+//            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, enDate, "SUCCESS");
+            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBefore(storeId, stDate, enDate);
             float totalValue = 0.00f;
             Response.DailySalesReportResponse data = new Response.DailySalesReportResponse();
 
-            data.setDate(myFormat.format(startDate.getTime()));
+            data.setDate(myFormat.format(sDate.getTime()));
             data.setTotalTrx(orders.size());
             for (Order order : orders) {
                 totalValue = totalValue + order.getTotal();
@@ -83,13 +84,14 @@ public class ReportController {
     }
 
 
-    @PostMapping(value = "store/{storeId}/report/weeklySales", name = "store-report-weeklySale-get")
-    public ResponseEntity<HttpResponse> weeklySales(HttpServletRequest request, @RequestBody SalesReport dailySalesReport, @PathVariable("storeId") String storeId) throws Exception {
+    @GetMapping(value = "store/{storeId}/report/weeklySales", name = "store-report-weeklySale-get")
+    public ResponseEntity<HttpResponse> weeklySales
+            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") int startWeekNo, @RequestParam(required = false, defaultValue = "") int endWeekNo, @PathVariable("storeId") String storeId) {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         Date date = new Date();
 
-        int weekNo = dailySalesReport.getEndWeekNo() - dailySalesReport.getStartWeekNo();
+        int weekNo = endWeekNo - startWeekNo;
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy");
         Set<Response.WeeklySalesReportResponse> reportResponseList = new HashSet<>();
@@ -103,13 +105,13 @@ public class ReportController {
             calendar.clear();
             calendar.set(Calendar.YEAR, year);
 
-            calendar.set(Calendar.WEEK_OF_YEAR, dailySalesReport.startWeekNo + i);
+            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
             calendar.set(Calendar.DAY_OF_WEEK, 1);
             // Now get the first day of week.
             Date sDate = calendar.getTime();
             System.out.println("Start Week Date :" + sDate);
 
-            calendar.set(Calendar.WEEK_OF_YEAR, dailySalesReport.startWeekNo + i);
+            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
             calendar.set(Calendar.DAY_OF_WEEK, 7);
             Date eDate = calendar.getTime();
             System.out.println("End week Date :" + eDate);
@@ -120,7 +122,7 @@ public class ReportController {
             List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, endDate, "SUCCESS");
             float totalValue = 0.00f;
             Response.WeeklySalesReportResponse weeklyReport = new Response.WeeklySalesReportResponse();
-            weeklyReport.setWeekNo(dailySalesReport.startWeekNo + i);
+            weeklyReport.setWeekNo(startWeekNo + i);
             weeklyReport.setTotalTrx(orders.size());
             weeklyReport.setWeekLabel(f.format(sDate.getTime()) + " to " + f.format(eDate.getTime()));
             for (Order order : orders) {
@@ -138,14 +140,15 @@ public class ReportController {
 
     }
 
-    @PostMapping(value = "store/{storeId}/report/monthlySales", name = "store-report-monthlySale-get")
-    public ResponseEntity<HttpResponse> monthlySales(HttpServletRequest request, @RequestBody SalesReport dailySalesReport, @PathVariable("storeId") String storeId) throws IOException {
+    @GetMapping(value = "store/{storeId}/report/monthlySales", name = "store-report-monthlySale-get")
+    public ResponseEntity<HttpResponse> monthlySales
+            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startMonth, @RequestParam(required = false, defaultValue = "") String endMonth, @PathVariable("storeId") String storeId) {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        String[] m1 = dailySalesReport.getStartMonth().split("-");
-        String[] m2 = dailySalesReport.getEndMonth().split("-");
+        String[] m1 = startMonth.split("-");
+        String[] m2 = endMonth.split("-");
         int month1 = Integer.parseInt(m1[0]);
         int month2 = Integer.parseInt(m2[0]);
         int year1 = Integer.parseInt(m1[1]);
@@ -234,32 +237,33 @@ public class ReportController {
 
     }
 
-    @PostMapping(value = "store/{storeId}/report/dailyTopProducts", name = "store-report-dailyTopProducts-get")
-    public ResponseEntity<HttpResponse> dailyTopProducts(HttpServletRequest request, @RequestBody TopProductSale topProductSale, @PathVariable("storeId") String storeId) throws Exception {
+    @GetMapping(value = "store/{storeId}/report/dailyTopProducts", name = "store-report-dailyTopProducts-get")
+    public ResponseEntity<HttpResponse> dailyTopProducts
+            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        long diffInMillis = myFormat.parse(topProductSale.getEndDate()).getTime() - myFormat.parse(topProductSale.getStartDate()).getTime();
+        long diffInMillis = myFormat.parse(endDate).getTime() - myFormat.parse(startDate).getTime();
         long diff = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
         Set<Response.DailyTopProductResponse> lists = new HashSet<>();
         for (int i = 0; i <= diff; i++) {
             Response.DailyTopProductResponse list = new Response.DailyTopProductResponse();
             List<Response.DailyTopProduct> reportResponseList = new ArrayList<>();
 
-            Calendar startDate = Calendar.getInstance();
+            Calendar sDate = Calendar.getInstance();
             try {
-                startDate.setTime(myFormat.parse(topProductSale.getStartDate().toString()));
+                sDate.setTime(myFormat.parse(startDate));
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            startDate.add(Calendar.DAY_OF_MONTH, i);
-            String stDate = myFormat.format(startDate.getTime()) + " 00:00:00";
-            String endDate = myFormat.format(startDate.getTime()) + " 23:59:59";
+            sDate.add(Calendar.DAY_OF_MONTH, i);
+            String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
+            String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
 
-            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "SUCCESS", 5);
-//            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, 5);
+            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, storeId, "SUCCESS", 5);
+//            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, 5);
 
             for (int k = 0; k < objects.size(); k++) {
                 Response.DailyTopProduct product = new Response.DailyTopProduct();
@@ -271,7 +275,7 @@ public class ReportController {
                 product.setRank(k + 1);
                 reportResponseList.add(product);
             }
-            list.setDate(myFormat.format(startDate.getTime()));
+            list.setDate(myFormat.format(sDate.getTime()));
             list.setTopProduct(reportResponseList);
             lists.add(list);
         }
@@ -281,13 +285,14 @@ public class ReportController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(value = "store/{storeId}/report/weeklyTopProducts", name = "store-report-weeklyTopProducts-get")
-    public ResponseEntity<HttpResponse> weeklyTopProducts(HttpServletRequest request, @RequestBody TopProductSale topProductSale, @PathVariable("storeId") String storeId) throws Exception {
+    @GetMapping(value = "store/{storeId}/report/weeklyTopProducts", name = "store-report-weeklyTopProducts-get")
+    public ResponseEntity<HttpResponse> weeklyTopProducts
+            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") int startWeekNo, @RequestParam(required = false, defaultValue = "") int endWeekNo, @PathVariable("storeId") String storeId) throws Exception {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         Date date = new Date();
 
-        int weekNo = topProductSale.getEndWeekNo() - topProductSale.getStartWeekNo();
+        int weekNo = endWeekNo - startWeekNo;
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy");
         Set<Response.WeeklyTopProductResponse> lists = new HashSet<>();
@@ -304,13 +309,13 @@ public class ReportController {
             calendar.clear();
             calendar.set(Calendar.YEAR, year);
 
-            calendar.set(Calendar.WEEK_OF_YEAR, topProductSale.startWeekNo + i);
+            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
             calendar.set(Calendar.DAY_OF_WEEK, 1);
             // Now get the first day of week.
             Date sDate = calendar.getTime();
             System.out.println("Start Week Date :" + sDate);
 
-            calendar.set(Calendar.WEEK_OF_YEAR, topProductSale.startWeekNo + i);
+            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
             calendar.set(Calendar.DAY_OF_WEEK, 7);
             Date eDate = calendar.getTime();
             System.out.println("End week Date :" + eDate);
@@ -330,7 +335,7 @@ public class ReportController {
                 product.setRank(k + 1);
                 reportResponseList.add(product);
             }
-            list.setWeekNo(topProductSale.startWeekNo + i);
+            list.setWeekNo(startWeekNo + i);
             list.setWeek(f.format(sDate.getTime()) + " to " + f.format(eDate.getTime()));
             list.setTopProduct(reportResponseList);
             lists.add(list);
@@ -341,14 +346,15 @@ public class ReportController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(value = "store/{storeId}/report/monthlyTopProducts", name = "store-report-monthlyTopProducts-get")
-    public ResponseEntity<HttpResponse> monthlyTopProducts(HttpServletRequest request, @RequestBody TopProductSale topProductSale, @PathVariable("storeId") String storeId) throws Exception {
+    @GetMapping(value = "store/{storeId}/report/monthlyTopProducts", name = "store-report-monthlyTopProducts-get")
+    public ResponseEntity<HttpResponse> monthlyTopProducts
+            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startMonth, @RequestParam(required = false, defaultValue = "") String endMonth, @PathVariable("storeId") String storeId) throws Exception {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        String[] m1 = topProductSale.getStartMonth().split("-");
-        String[] m2 = topProductSale.getEndMonth().split("-");
+        String[] m1 = startMonth.split("-");
+        String[] m2 = endMonth.split("-");
         int month1 = Integer.parseInt(m1[0]);
         int month2 = Integer.parseInt(m2[0]);
         int year1 = Integer.parseInt(m1[1]);
@@ -454,13 +460,13 @@ public class ReportController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(value = "productInventory", name = "store-report-productInventory-get")
-    public ResponseEntity<HttpResponse> productInventory(HttpServletRequest request, @RequestBody InventoryRequest inventoryRequest) throws IOException {
+    @GetMapping(value = "productInventory", name = "store-report-productInventory-get")
+    public ResponseEntity<HttpResponse> productInventory(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String storeId, @RequestParam(required = false, defaultValue = "") Integer minTotal, @RequestParam(required = false, defaultValue = "") Integer maxTotal) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
-        List<Product> products = productRepository.findAllByStoreId(inventoryRequest.getStoreId());
+        List<Product> products = productRepository.findAllByStoreId(storeId);
         Set<Response.ProductInventoryResponse> inventoryResponse = new HashSet<>();
         for (Product product : products) {
-            List<ProductInventory> inventories = productInventoryRepository.findAllByProductIdAndQuantityGreaterThanEqualAndQuantityLessThanEqual(product.getId(), inventoryRequest.getMinTotal(), inventoryRequest.getMaxTotal());
+            List<ProductInventory> inventories = productInventoryRepository.findAllByProductIdAndQuantityGreaterThanEqualAndQuantityLessThanEqual(product.getId(), minTotal, maxTotal);
             Response.ProductInventoryResponse res = new Response.ProductInventoryResponse();
             for (ProductInventory in : inventories) {
                 res.setProductName(in.getProduct().getName());
@@ -474,14 +480,14 @@ public class ReportController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(value = "store/{storeId}/monthlyStatement")
-    public ResponseEntity<HttpResponse> monthlyStatement(HttpServletRequest request, @RequestBody Statement statement, @PathVariable("storeId") String storeId) throws IOException {
+    @GetMapping(value = "store/{storeId}/monthlyStatement")
+    public ResponseEntity<HttpResponse> monthlyStatement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startMonth, @RequestParam(required = false, defaultValue = "") String endMonth, @PathVariable("storeId") String storeId) throws IOException {
         //TODO: Need to add Order Refund Value.
         HttpResponse response = new HttpResponse(request.getRequestURI());
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        String[] m1 = statement.getStartMonth().split("-");
-        String[] m2 = statement.getEndMonth().split("-");
+        String[] m1 = startMonth.split("-");
+        String[] m2 = endMonth.split("-");
         int month1 = Integer.parseInt(m1[0]);
         int month2 = Integer.parseInt(m2[0]);
         int year1 = Integer.parseInt(m1[1]);
@@ -577,14 +583,14 @@ public class ReportController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(value = "store/{storeId}/weeklyStatement")
-    public ResponseEntity<HttpResponse> weeklyStatement(HttpServletRequest request, @RequestBody Statement Statement, @PathVariable("storeId") String storeId) throws IOException {
+    @GetMapping(value = "store/{storeId}/weeklyStatement")
+    public ResponseEntity<HttpResponse> weeklyStatement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") Integer startWeekNo, @RequestParam(required = false, defaultValue = "") Integer endWeekNo, @PathVariable("storeId") String storeId) throws IOException {
         //TODO: Need to add Order Refund Value.
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Date date = new Date();
-        int weekNo = Statement.getEndWeekNo() - Statement.getStartWeekNo();
+        int weekNo = endWeekNo - startWeekNo;
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy");
         Set<Response.WeeklyStatement> reportResponseList = new HashSet<>();
@@ -598,13 +604,13 @@ public class ReportController {
             calendar.clear();
             calendar.set(Calendar.YEAR, year);
 
-            calendar.set(Calendar.WEEK_OF_YEAR, Statement.startWeekNo + i);
+            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
             calendar.set(Calendar.DAY_OF_WEEK, 1);
             // Now get the first day of week.
             Date sDate = calendar.getTime();
             System.out.println("Start Week Date :" + sDate);
 
-            calendar.set(Calendar.WEEK_OF_YEAR, Statement.startWeekNo + i);
+            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
             calendar.set(Calendar.DAY_OF_WEEK, 7);
             Date eDate = calendar.getTime();
             System.out.println("End week Date :" + eDate);
@@ -620,7 +626,7 @@ public class ReportController {
                 }
             }
             Response.WeeklyStatement weeklyStatement = new Response.WeeklyStatement();
-            weeklyStatement.setWeekNo(Statement.startWeekNo + i);
+            weeklyStatement.setWeekNo(startWeekNo + i);
             weeklyStatement.setTotalTrx(orders.size());
             weeklyStatement.setWeekLabel(f.format(sDate.getTime()) + " to " + f.format(eDate.getTime()));
 
@@ -634,192 +640,6 @@ public class ReportController {
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(reportResponseList);
         return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
-
-    public static class SalesReport {
-        public String startDate;
-        public String endDate;
-        public int startWeekNo;
-        public int endWeekNo;
-        public String startMonth;
-        public String endMonth;
-        public String storeId;
-
-
-        public String getStartDate() {
-            return startDate;
-        }
-
-        public void setStartDate(String startDate) {
-            this.startDate = startDate;
-        }
-
-        public String getEndDate() {
-            return endDate;
-        }
-
-        public void setEndDate(String endDate) {
-            this.endDate = endDate;
-        }
-
-        public int getStartWeekNo() {
-            return startWeekNo;
-        }
-
-        public void setStartWeekNo(int startWeekNo) {
-            this.startWeekNo = startWeekNo;
-        }
-
-        public int getEndWeekNo() {
-            return endWeekNo;
-        }
-
-        public void setEndWeekNo(int endWeekNo) {
-            this.endWeekNo = endWeekNo;
-        }
-
-        public String getStartMonth() {
-            return startMonth;
-        }
-
-        public void setStartMonth(String startMonth) {
-            this.startMonth = startMonth;
-        }
-
-        public String getEndMonth() {
-            return endMonth;
-        }
-
-        public void setEndMonth(String endMonth) {
-            this.endMonth = endMonth;
-        }
-
-        public String getStoreId() {
-            return storeId;
-        }
-
-        public void setStoreId(String storeId) {
-            this.storeId = storeId;
-        }
-
-        @Override
-        public String toString() {
-            return "SalesReport{" +
-                    "startDate='" + startDate + '\'' +
-                    ", endDate='" + endDate + '\'' +
-                    ", startWeekNo='" + startWeekNo + '\'' +
-                    ", endWeekNo='" + endWeekNo + '\'' +
-                    ", startMonth='" + startMonth + '\'' +
-                    ", endMonth='" + endMonth + '\'' +
-                    ", storeId='" + storeId + '\'' +
-                    '}';
-        }
-    }
-
-    public static class InventoryRequest {
-        private String productCategory;
-        private Integer minTotal;
-        private Integer maxTotal;
-        private String storeId;
-
-        public String getProductCategory() {
-            return productCategory;
-        }
-
-        public void setProductCategory(String productCategory) {
-            this.productCategory = productCategory;
-        }
-
-        public Integer getMinTotal() {
-            return minTotal;
-        }
-
-        public void setMinTotal(Integer minTotal) {
-            this.minTotal = minTotal;
-        }
-
-        public Integer getMaxTotal() {
-            return maxTotal;
-        }
-
-        public void setMaxTotal(Integer maxTotal) {
-            this.maxTotal = maxTotal;
-        }
-
-        public String getStoreId() {
-            return storeId;
-        }
-
-        public void setStoreId(String storeId) {
-            this.storeId = storeId;
-        }
-    }
-
-    public static class TopProductSale {
-        private String startDate;
-        private String endDate;
-        private int startWeekNo;
-        private int endWeekNo;
-        private String startMonth;
-        private String endMonth;
-        private Integer pageSize;
-
-        public String getStartDate() {
-            return startDate;
-        }
-
-        public void setStartDate(String startDate) {
-            this.startDate = startDate;
-        }
-
-        public String getEndDate() {
-            return endDate;
-        }
-
-        public void setEndDate(String endDate) {
-            this.endDate = endDate;
-        }
-
-        public int getStartWeekNo() {
-            return startWeekNo;
-        }
-
-        public void setStartWeekNo(int startWeekNo) {
-            this.startWeekNo = startWeekNo;
-        }
-
-        public int getEndWeekNo() {
-            return endWeekNo;
-        }
-
-        public void setEndWeekNo(int endWeekNo) {
-            this.endWeekNo = endWeekNo;
-        }
-
-        public String getStartMonth() {
-            return startMonth;
-        }
-
-        public void setStartMonth(String startMonth) {
-            this.startMonth = startMonth;
-        }
-
-        public String getEndMonth() {
-            return endMonth;
-        }
-
-        public void setEndMonth(String endMonth) {
-            this.endMonth = endMonth;
-        }
-
-        public Integer getPageSize() {
-            return pageSize;
-        }
-
-        public void setPageSize(Integer pageSize) {
-            this.pageSize = pageSize;
-        }
     }
 
 
