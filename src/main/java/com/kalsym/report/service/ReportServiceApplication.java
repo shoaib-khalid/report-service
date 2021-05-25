@@ -37,7 +37,7 @@ public class ReportServiceApplication implements CommandLineRunner {
     private Environment env;
 
     public static void main(String... args) {
-        logger.info("Staring order-service...");
+        logger.info("Staring report-service...");
         SpringApplication.run(ReportServiceApplication.class, args);
     }
 
