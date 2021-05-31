@@ -64,8 +64,8 @@ public class ReportController {
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
 
-//            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, enDate, "SUCCESS");
-            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBefore(storeId, stDate, enDate);
+            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, enDate, "Completed");
+//            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBefore(storeId, stDate, enDate);
             float totalValue = 0.00f;
             Response.DailySalesReportResponse data = new Response.DailySalesReportResponse();
 
@@ -119,7 +119,7 @@ public class ReportController {
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String endDate = myFormat.format(eDate.getTime()) + " 23:59:59";
 //            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBefore(storeId, stDate, endDate);
-            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, endDate, "SUCCESS");
+            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, endDate, "Completed");
             float totalValue = 0.00f;
             Response.WeeklySalesReportResponse weeklyReport = new Response.WeeklySalesReportResponse();
             weeklyReport.setWeekNo(startWeekNo + i);
@@ -178,7 +178,7 @@ public class ReportController {
                 String endDate = myFormat.format(cal.getTime()) + " 23:59:59";
 
 //            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "SUCCESS", 5);
-                List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, endDate, "SUCCESS");
+                List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, endDate, "Completed");
 //                List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBefore(storeId, stDate, endDate);
                 float totalValue = 0.00f;
                 Response.MonthlySalesReportResponse monthlyReport = new Response.MonthlySalesReportResponse();
@@ -216,7 +216,7 @@ public class ReportController {
 
 //            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "SUCCESS", 5);
 //                List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBefore(storeId, stDate, endDate);
-                List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, endDate, "SUCCESS");
+                List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, endDate, "Completed");
                 float totalValue = 0.00f;
                 Response.MonthlySalesReportResponse monthlyReport = new Response.MonthlySalesReportResponse();
                 monthlyReport.setMonthNo(new SimpleDateFormat("MM-yyyy").format(cal.getTime()));
@@ -262,7 +262,7 @@ public class ReportController {
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
 
-            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, storeId, "SUCCESS", 5);
+            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, storeId, "Completed", 5);
 //            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, 5);
 
             for (int k = 0; k < objects.size(); k++) {
@@ -322,7 +322,7 @@ public class ReportController {
 
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String endDate = myFormat.format(eDate.getTime()) + " 23:59:59";
-            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "SUCCESS", 5);
+            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "Completed", 5);
 //            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, 5);
 
             for (int k = 0; k < objects.size(); k++) {
@@ -384,7 +384,7 @@ public class ReportController {
 
                 String endDate = myFormat.format(cal.getTime()) + " 23:59:59";
 
-                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "SUCCESS", 5);
+                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "Completed", 5);
 //                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, 5);
 
                 for (int k = 0; k < objects.size(); k++) {
@@ -432,7 +432,7 @@ public class ReportController {
 
                 String endDate = myFormat.format(cal.getTime()) + " 23:59:59";
 
-                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "SUCCESS", 5);
+                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "Completed", 5);
 //                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, 5);
 
                 for (int k = 0; k < objects.size(); k++) {
