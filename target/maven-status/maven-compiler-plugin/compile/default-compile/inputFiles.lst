@@ -5,6 +5,7 @@ D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\repository\OrderItemRepository.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\Response.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\MySQLUserDetails.java
+D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\report\StoreDailySaleIdentity.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\ListenerBean.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\ProductInventory.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\utils\Logger.java

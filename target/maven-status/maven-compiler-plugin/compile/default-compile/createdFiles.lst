@@ -27,6 +27,7 @@ com\kalsym\report\service\model\ProductInventory.class
 com\kalsym\report\service\model\Response$WeeklyTopProductResponse.class
 com\kalsym\report\service\model\repository\StoreDailySalesRepository.class
 com\kalsym\report\service\model\Response$DailySalesReportResponse.class
+com\kalsym\report\service\model\report\StoreDailySaleIdentity.class
 com\kalsym\report\service\model\Response$MonthlyTopProductResponse.class
 com\kalsym\report\service\config\SessionAuthenticationEntryPoint.class
 com\kalsym\report\service\config\SwaggerConfig.class
