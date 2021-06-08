@@ -1,6 +1,5 @@
 package com.kalsym.report.service.controller;
 
-
 import com.kalsym.report.service.model.Order;
 import com.kalsym.report.service.model.Product;
 import com.kalsym.report.service.model.ProductInventory;
@@ -9,7 +8,9 @@ import com.kalsym.report.service.model.repository.OrderItemRepository;
 import com.kalsym.report.service.model.repository.OrderRepository;
 import com.kalsym.report.service.model.repository.ProductInventoryRepository;
 import com.kalsym.report.service.model.repository.ProductRepository;
+import com.kalsym.report.service.model.repository.StoreDailySalesRepository;
 import com.kalsym.report.service.utils.HttpResponse;
+import com.kalsym.report.service.utils.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -20,13 +21,21 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @RestController
-@RequestMapping(path = "/")
-public class ReportController {
+@RequestMapping(path = "store/{storeId}")
+public class StoreReportsController {
 
     @Value("${services.user-service.session_details:not-known}")
     String userServiceUrl;
@@ -43,9 +52,11 @@ public class ReportController {
     @Autowired
     OrderItemRepository orderItemRepository;
 
+    @Autowired
+    StoreDailySalesRepository storeDailySalesRepository;
+
     @GetMapping(value = "store/{storeId}/report/dailySales", name = "store-report-dailySale-get")
-    public ResponseEntity<HttpResponse> dailySales
-            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId) throws Exception {
+    public ResponseEntity<HttpResponse> dailySales(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -83,10 +94,8 @@ public class ReportController {
 
     }
 
-
     @GetMapping(value = "store/{storeId}/report/weeklySales", name = "store-report-weeklySale-get")
-    public ResponseEntity<HttpResponse> weeklySales
-            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") int startWeekNo, @RequestParam(required = false, defaultValue = "") int endWeekNo, @PathVariable("storeId") String storeId) {
+    public ResponseEntity<HttpResponse> weeklySales(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") int startWeekNo, @RequestParam(required = false, defaultValue = "") int endWeekNo, @PathVariable("storeId") String storeId) {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         Date date = new Date();
@@ -133,7 +142,6 @@ public class ReportController {
 
         }
 
-
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(reportResponseList);
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -141,8 +149,7 @@ public class ReportController {
     }
 
     @GetMapping(value = "store/{storeId}/report/monthlySales", name = "store-report-monthlySale-get")
-    public ResponseEntity<HttpResponse> monthlySales
-            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startMonth, @RequestParam(required = false, defaultValue = "") String endMonth, @PathVariable("storeId") String storeId) {
+    public ResponseEntity<HttpResponse> monthlySales(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startMonth, @RequestParam(required = false, defaultValue = "") String endMonth, @PathVariable("storeId") String storeId) {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -238,10 +245,8 @@ public class ReportController {
     }
 
     @GetMapping(value = "store/{storeId}/report/dailyTopProducts", name = "store-report-dailyTopProducts-get")
-    public ResponseEntity<HttpResponse> dailyTopProducts
-            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId) throws Exception {
+    public ResponseEntity<HttpResponse> dailyTopProducts(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
-
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -286,8 +291,7 @@ public class ReportController {
     }
 
     @GetMapping(value = "store/{storeId}/report/weeklyTopProducts", name = "store-report-weeklyTopProducts-get")
-    public ResponseEntity<HttpResponse> weeklyTopProducts
-            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") int startWeekNo, @RequestParam(required = false, defaultValue = "") int endWeekNo, @PathVariable("storeId") String storeId) throws Exception {
+    public ResponseEntity<HttpResponse> weeklyTopProducts(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") int startWeekNo, @RequestParam(required = false, defaultValue = "") int endWeekNo, @PathVariable("storeId") String storeId) throws Exception {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         Date date = new Date();
@@ -347,8 +351,7 @@ public class ReportController {
     }
 
     @GetMapping(value = "store/{storeId}/report/monthlyTopProducts", name = "store-report-monthlyTopProducts-get")
-    public ResponseEntity<HttpResponse> monthlyTopProducts
-            (HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startMonth, @RequestParam(required = false, defaultValue = "") String endMonth, @PathVariable("storeId") String storeId) throws Exception {
+    public ResponseEntity<HttpResponse> monthlyTopProducts(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startMonth, @RequestParam(required = false, defaultValue = "") String endMonth, @PathVariable("storeId") String storeId) throws Exception {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -399,7 +402,6 @@ public class ReportController {
 
                 }
                 System.out.println("Day: " + reportResponseList.toString());
-
 
                 list.setMonthNo(new SimpleDateFormat("MM-yyyy").format(cal.getTime()));
                 list.setMonthLabel(new SimpleDateFormat("MMM-yyyy").format(cal.getTime()));
@@ -482,8 +484,8 @@ public class ReportController {
 
     @GetMapping(value = "store/{storeId}/monthlyStatement")
     public ResponseEntity<HttpResponse> monthlyStatement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startMonth,
-                                                         @RequestParam(required = false, defaultValue = "") String endMonth,
-                                                         @PathVariable("storeId") String storeId) throws IOException {
+            @RequestParam(required = false, defaultValue = "") String endMonth,
+            @PathVariable("storeId") String storeId) throws IOException {
         //TODO: Need to add Order Refund Value.
         HttpResponse response = new HttpResponse(request.getRequestURI());
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -636,7 +638,6 @@ public class ReportController {
             weeklyStatement.setType("sales");
             reportResponseList.add(weeklyStatement);
 
-
         }
 
         response.setSuccessStatus(HttpStatus.OK);
@@ -644,6 +645,35 @@ public class ReportController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping(value = "/daily_sales")
+    public ResponseEntity<HttpResponse> dailyReport(HttpServletRequest request,
+            @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+            @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+            @RequestParam(defaultValue = "date", required = false) String sortBy,
+            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @PathVariable("storeId") String storeId) throws IOException {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logPrefix = request.getRequestURI();
+        Logger.application.info(logPrefix, "", "");
+        Logger.application.info("querystring: " + request.getQueryString(), "");
+        Logger.application.info("from: " + from.toString(), "");
+        Logger.application.info("to: " + to.toString(), "");
+
+        Pageable pageable = null;
+        if (sortingOrder.equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        } else {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+        }
+        Logger.application.info("pageable: " + pageable, "");
+
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(storeDailySalesRepository.findByDateBetween(from, to, pageable));
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 
     public static class Statement {
 
