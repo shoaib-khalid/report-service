@@ -481,7 +481,9 @@ public class ReportController {
     }
 
     @GetMapping(value = "store/{storeId}/monthlyStatement")
-    public ResponseEntity<HttpResponse> monthlyStatement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startMonth, @RequestParam(required = false, defaultValue = "") String endMonth, @PathVariable("storeId") String storeId) throws IOException {
+    public ResponseEntity<HttpResponse> monthlyStatement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startMonth,
+                                                         @RequestParam(required = false, defaultValue = "") String endMonth,
+                                                         @PathVariable("storeId") String storeId) throws IOException {
         //TODO: Need to add Order Refund Value.
         HttpResponse response = new HttpResponse(request.getRequestURI());
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
