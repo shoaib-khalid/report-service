@@ -12,11 +12,12 @@ public interface StoreDailySalesRepository extends JpaRepository<StoreDailySale,
 
     /**
      *
+     * @param storeId
      * @param from
      * @param to
      * @param pageable
      * @return
      */
-    public Page<StoreDailySale> findByDateBetween(Date from, Date to, Pageable pageable);
+    public Page<StoreDailySale> findByStoreIdAndDateBetween(String storeId, Date from, Date to, Pageable pageable);
 
 }
