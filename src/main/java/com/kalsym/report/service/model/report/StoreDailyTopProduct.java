@@ -15,20 +15,21 @@ import javax.persistence.TemporalType;
 @Entity
 @Getter
 @Setter
-@IdClass(StoreDailySaleIdentity.class)
+@IdClass(StoreDailyTopProductIdentity.class)
 @ToString
-@Table(name = "store_daily_sale")
-public class StoreDailySale implements Serializable {
+@Table(name = "store_daily_top_product")
+public class StoreDailyTopProduct implements Serializable {
 
     @Id
     @Temporal(TemporalType.DATE)
     private Date date;
     @Id
+    private String productId;
+
+    @Id
     private String storeId;
 
     private Integer totalOrders;
-    private Integer successFullOrders;
-    private Integer canceledOrders;
-    private Float amountEarned;
+    private String name;
 
 }
