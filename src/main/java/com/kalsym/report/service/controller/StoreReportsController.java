@@ -55,7 +55,7 @@ public class StoreReportsController {
 
     @Autowired
     StoreDailySalesRepository storeDailySalesRepository;
-    
+
     @Autowired
     StoreDailyTopProductsRepository storeDailyTopProductsRepository;
 
@@ -675,7 +675,8 @@ public class StoreReportsController {
         Logger.application.info("pageable: " + pageable, "");
 
         response.setSuccessStatus(HttpStatus.OK);
-        response.setData(storeDailySalesRepository.findByDateBetween(from, to, pageable));
+        response.setData(storeDailySalesRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
+        //response.setData(storeDailySalesRepository.findByStoreIdAndDateBetween(from, to, pageable));
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
