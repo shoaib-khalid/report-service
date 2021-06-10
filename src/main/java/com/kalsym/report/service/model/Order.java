@@ -1,6 +1,6 @@
 package com.kalsym.report.service.model;
 
-
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -17,7 +17,7 @@ import java.util.Date;
 @Setter
 @ToString
 @Table(name = "order")
-public class Order {
+public class Order implements Serializable {
 
     @Id
     @GeneratedValue(generator = "uuid2")
