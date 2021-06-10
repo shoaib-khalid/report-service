@@ -20,7 +20,7 @@ public interface StoreSettlementsRepository extends JpaRepository<StoreSettlemen
      * @param pageable
      * @return
      */
-    @Query(value = "SELECT s FROM StoreSettlement s WHERE s.startDate >= :from AND s.endDate <= :to AND s.storeId=:storeId")
+    @Query(value = "SELECT s FROM StoreSettlement s WHERE s.startDate >= :from AND s.startDate <= :to AND s.storeId=:storeId")
     public Page<StoreSettlement> findByStoreIdAndDateBetween(@Param("storeId") String storeId, @Param("from") Date from, @Param("to") Date to, Pageable pageable);
 
 }
