@@ -5,6 +5,7 @@ import java.util.Date;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -19,5 +20,14 @@ public interface StoreDailySalesRepository extends JpaRepository<StoreDailySale,
      * @return
      */
     public Page<StoreDailySale> findByStoreIdAndDateBetween(String storeId, Date from, Date to, Pageable pageable);
+
+    @Procedure("insertDailySales")
+    public void insertDailySales();
+
+    @Procedure("insertProductDailySales")
+    public void insertProductDailySales();
+
+    @Procedure("insertStoreDailyTopProduct")
+    public void insertStoreDailyTopProduct();
 
 }
