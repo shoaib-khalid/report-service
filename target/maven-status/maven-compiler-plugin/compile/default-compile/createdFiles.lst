@@ -1,5 +1,6 @@
 com\kalsym\report\service\model\Response$WeeklyTopProduct.class
 com\kalsym\report\service\controller\StoreProductReportsController.class
+com\kalsym\report\service\model\report\StoreSettlement.class
 com\kalsym\report\service\service\MySQLUserDetailsService.class
 com\kalsym\report\service\model\Auth.class
 com\kalsym\report\service\model\Response$MonthlyTopProduct.class
@@ -15,6 +16,7 @@ com\kalsym\report\service\model\report\StoreDailyTopProductIdentity.class
 com\kalsym\report\service\model\Response$MonthlySalesReportResponse.class
 com\kalsym\report\service\model\OrderItem.class
 com\kalsym\report\service\model\ProductInventory.class
+com\kalsym\report\service\model\report\StoreSettlement$SettlementStatus.class
 com\kalsym\report\service\model\repository\ProductDailySalesRepository.class
 com\kalsym\report\service\model\Response$WeeklyTopProductResponse.class
 com\kalsym\report\service\model\repository\StoreDailySalesRepository.class
@@ -37,6 +39,7 @@ com\kalsym\report\service\filter\SessionRequestFilter.class
 com\kalsym\report\service\model\repository\ProductInventoryRepository.class
 com\kalsym\report\service\model\Response$DailyTopProduct.class
 com\kalsym\report\service\config\WebSecurityConfig.class
+com\kalsym\report\service\model\repository\StoreSettlementsRepository.class
 com\kalsym\report\service\ListenerBean$1Authority.class
 com\kalsym\report\service\controller\StoreProductReportsController$Statement.class
 com\kalsym\report\service\model\repository\ProductRepository.class

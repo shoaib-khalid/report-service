@@ -4,12 +4,14 @@ D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\service\ReportsGenerator.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\repository\ProductDailySalesRepository.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\config\SwaggerConfig.java
+D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\report\StoreSettlement.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\repository\OrderItemRepository.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\Response.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\MySQLUserDetails.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\report\StoreDailySaleIdentity.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\ListenerBean.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\ProductInventory.java
+D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\repository\StoreSettlementsRepository.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\utils\Logger.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\report\StoreDailySale.java
 D:\kalsym-repo\Symplified\report-service\src\main\java\com\kalsym\report\service\model\repository\ProductRepository.java
