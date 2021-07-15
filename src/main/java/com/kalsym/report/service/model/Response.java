@@ -37,6 +37,98 @@ public class Response {
 
     }
 
+    public static class Sales {
+        public String storeId;
+        public String merchantName;
+        public String storeName;
+        public Float total;
+        public Float serviceCharge;
+        public Float deliveryCharge;
+        public String customerName;
+        public String orderStatus;
+        public String deliveryStatus;
+        public Float commission;
+
+        public String getStoreId() { return storeId; }
+
+        public void setStoreId(String storeId) { this.storeId = storeId; }
+
+        public String getMerchantName() { return merchantName; };
+
+        public void setMerchantName(String merchantName) { this.merchantName = merchantName; }
+
+        public String getStoreName() { return storeName; }
+
+        public void setStoreName(String storeName) { this.storeName = storeName; }
+
+        public Float getTotal() { return  total; }
+
+        public void setTotal(Float total) { this.total = total; }
+
+        public Float getServiceCharge() { return serviceCharge; }
+
+        public void setServiceCharge(Float serviceCharge) { this.serviceCharge = serviceCharge; }
+
+        public Float getDeliveryCharge() { return deliveryCharge; }
+
+        public void setDeliveryCharge(Float deliveryCharge) { this.deliveryCharge = deliveryCharge; }
+
+        public String getCustomerName() { return customerName; }
+
+        public void setCustomerName(String customerName) { this.customerName = customerName; }
+
+        public String getOrderStatus() { return orderStatus; }
+
+        public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
+
+        public String getDeliveryStatus() { return deliveryStatus; }
+
+        public void setDeliveryStatus(String deliveryStatus) { this.deliveryStatus = deliveryStatus; }
+
+        public Float getCommission() { return  commission; }
+
+        public void setCommission(Float commission) { this.commission = commission; }
+    }
+
+    public static class DetailedSalesReportResponse {
+        public String date;
+        private List<Sales> sales;
+
+        public String getDate() { return date; }
+
+        public void setDate(String date) { this.date = date; }
+
+        public List<Sales> getSales() { return sales; }
+
+        public void setSales(List<Sales> sales) { this.sales = sales; }
+    }
+
+    public static class DetailedWeekSalesReportResponse {
+        public String date;
+        private List<Sales> sales;
+
+        public String getDate() { return date; }
+
+        public void setDate(String date) { this.date = date; }
+
+        public List<Sales> getSales() { return sales; }
+
+        public void setSales(List<Sales> sales) { this.sales = sales; }
+    }
+
+    public static class DetailedMonthSalesReportResponse {
+        public String date;
+        private List<Sales> sales;
+
+        public String getDate() { return date; }
+
+        public void setDate(String date) { this.date = date; }
+
+        public List<Sales> getSales() { return sales; }
+
+        public void setSales(List<Sales> sales) { this.sales = sales; }
+    }
+
     public static class WeeklySalesReportResponse {
         public Integer weekNo;
         public String weekLabel;
