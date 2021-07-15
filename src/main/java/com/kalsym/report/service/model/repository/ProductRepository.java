@@ -10,5 +10,5 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, String> {
 
     List<Product> findAllByStoreId(String storeId);
-    Product getOne(String productId);
+    Product getOne(String id);
 }
