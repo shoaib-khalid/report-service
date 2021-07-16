@@ -102,7 +102,7 @@ public class StoreReportsController {
 
     }
 
-    @GetMapping(value = "/report/sales", name = "store-report-sale-get")
+    @GetMapping(value = "/report/detailedDailySales", name = "store-detail-report-sale-get")
     public ResponseEntity<HttpResponse> sales(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
@@ -421,7 +421,7 @@ public class StoreReportsController {
             String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
 
             List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, storeId, "PAID", 5);
-            System.err.println("test obe: " + objects.get(1)[0].toString());
+//            System.err.println("test obe: " + objects.get(1)[0].toString());
 //            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, 5);
 
             for (int k = 0; k < objects.size(); k++) {
@@ -481,7 +481,7 @@ public class StoreReportsController {
 
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String endDate = myFormat.format(eDate.getTime()) + " 23:59:59";
-            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "Completed", 5);
+            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "PAID", 5);
 //            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, 5);
 
             for (int k = 0; k < objects.size(); k++) {
@@ -542,7 +542,7 @@ public class StoreReportsController {
 
                 String endDate = myFormat.format(cal.getTime()) + " 23:59:59";
 
-                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "Completed", 5);
+                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "PAID", 5);
 //                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, 5);
 
                 for (int k = 0; k < objects.size(); k++) {
@@ -589,7 +589,7 @@ public class StoreReportsController {
 
                 String endDate = myFormat.format(cal.getTime()) + " 23:59:59";
 
-                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "Completed", 5);
+                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, storeId, "PAID", 5);
 //                List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, endDate, 5);
 
                 for (int k = 0; k < objects.size(); k++) {
