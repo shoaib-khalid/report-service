@@ -44,13 +44,13 @@ public class StoreSettlement implements Serializable {
     private Float totalRefund;
     private Float totaltoBePayed;
 
-    @Column(columnDefinition = "ENUM('RUNNING', 'WITHDRAWN', 'AVAILABLE_FOR_WITHDRAW')")
+    @Column(columnDefinition = "enum('PAID', 'AVAILABLE', 'RUNNING')")
     @Enumerated(EnumType.STRING)
     private SettlementStatus settlementStatus;
 
     public enum SettlementStatus {
-        RUNNING,
-        WITHDRAWN,
-        AVAILABLE_FOR_WITHDRAW
+        PAID,
+        AVAILABLE,
+        RUNNING
     }
 }

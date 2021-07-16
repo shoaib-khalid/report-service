@@ -617,6 +617,48 @@ public class StoreReportsController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping(value="report/settlement", name="store-report-settlement-get")
+    public ResponseEntity<HttpResponse> settlement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "2021-01-01") String startDate, @RequestParam(required = false, defaultValue = "2021-12-31") String endDate, @PathVariable("storeId") String storeId) throws Exception {
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Set<Response.SettlementResponse> lists = new HashSet<>();
+        Response.SettlementResponse list = new Response.SettlementResponse();
+        Calendar sDate = Calendar.getInstance();
+        Calendar eDate = Calendar.getInstance();
+        try {
+            sDate.setTime(myFormat.parse(startDate));
+            eDate.setTime(myFormat.parse(endDate));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
+        String enDate = myFormat.format(eDate.getTime()) + " 23:59:59";
+        List<Object[]> settlements = storeSettlementsRepository.findByStoreIdAndDate(storeId, stDate, enDate);
+
+        for (int k = 0; k < settlements.size(); k++) {
+            list.setMerchantName(settlements.get(k)[5].toString());
+            String gross = settlements.get(k)[7].toString();
+            list.setGross(Float.parseFloat(gross));
+            String serviceFee = settlements.get(k)[8].toString();
+            list.setServiceFee(Float.parseFloat(serviceFee));
+            String commissionFee = settlements.get(k)[9].toString();
+            list.setCommission(Float.parseFloat(commissionFee));
+            String refund = settlements.get(k)[10].toString();
+            list.setRefund(Float.parseFloat(refund));
+            Float fee = Float.parseFloat(commissionFee) + Float.parseFloat(refund);
+            list.setFees(fee);
+            String nett = settlements.get(k)[11].toString();
+            list.setNett(Float.parseFloat(nett));
+        }
+
+        lists.add(list);
+
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(lists);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @GetMapping(value = "productInventory", name = "store-report-productInventory-get")
     public ResponseEntity<HttpResponse> productInventory(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String storeId, @RequestParam(required = false, defaultValue = "") Integer minTotal, @RequestParam(required = false, defaultValue = "") Integer maxTotal) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -862,36 +904,36 @@ public class StoreReportsController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @GetMapping(value = "/settlement")
-    public ResponseEntity<HttpResponse> settlement(HttpServletRequest request,
-            @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-            @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
-            @RequestParam(defaultValue = "startDate", required = false) String sortBy,
-            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int pageSize,
-            @PathVariable("storeId") String storeId) throws IOException {
-
-        HttpResponse response = new HttpResponse(request.getRequestURI());
-        String logPrefix = request.getRequestURI();
-        Logger.application.info(logPrefix, "", "");
-        Logger.application.info("querystring: " + request.getQueryString(), "");
-        Logger.application.info("from: " + from.toString(), "");
-        Logger.application.info("to: " + to.toString(), "");
-        Logger.application.info("storeId: " + storeId, "");
-
-        Pageable pageable = null;
-        if (sortingOrder.equalsIgnoreCase("desc")) {
-            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-        } else {
-            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
-        }
-        Logger.application.info("pageable: " + pageable, "");
-
-        response.setSuccessStatus(HttpStatus.OK);
-        response.setData(storeSettlementsRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
-        return ResponseEntity.status(response.getStatus()).body(response);
-    }
+//    @GetMapping(value = "/settlement")
+//    public ResponseEntity<HttpResponse> settlement(HttpServletRequest request,
+//            @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+//            @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+//            @RequestParam(defaultValue = "startDate", required = false) String sortBy,
+//            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "20") int pageSize,
+//            @PathVariable("storeId") String storeId) throws IOException {
+//
+//        HttpResponse response = new HttpResponse(request.getRequestURI());
+//        String logPrefix = request.getRequestURI();
+//        Logger.application.info(logPrefix, "", "");
+//        Logger.application.info("querystring: " + request.getQueryString(), "");
+//        Logger.application.info("from: " + from.toString(), "");
+//        Logger.application.info("to: " + to.toString(), "");
+//        Logger.application.info("storeId: " + storeId, "");
+//
+//        Pageable pageable = null;
+//        if (sortingOrder.equalsIgnoreCase("desc")) {
+//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+//        } else {
+//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+//        }
+//        Logger.application.info("pageable: " + pageable, "");
+//
+//        response.setSuccessStatus(HttpStatus.OK);
+//        response.setData(storeSettlementsRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
+//        return ResponseEntity.status(response.getStatus()).body(response);
+//    }
 
     public static class Statement {
 
