@@ -103,6 +103,72 @@ public class Response {
         public void setSales(List<Sales> sales) { this.sales = sales; }
     }
 
+    public static class SettlementResponse {
+        public String merchantName;
+        public Float gross;
+        public Float fees;
+        public Float nett;
+        public Float Commission;
+        public Float serviceFee;
+        public Float refund;
+
+        public String getMerchantName() {
+            return merchantName;
+        }
+
+        public void setMerchantName(String merchantName) {
+            this.merchantName = merchantName;
+        }
+
+        public Float getGross() {
+            return gross;
+        }
+
+        public void setGross(Float gross) {
+            this.gross = gross;
+        }
+
+        public Float getFees() {
+            return fees;
+        }
+
+        public void setFees(Float fees) {
+            this.fees = fees;
+        }
+
+        public Float getNett() {
+            return nett;
+        }
+
+        public void setNett(Float nett) {
+            this.nett = nett;
+        }
+
+        public Float getCommission() {
+            return Commission;
+        }
+
+        public void setCommission(Float commission) {
+            Commission = commission;
+        }
+
+        public Float getServiceFee() {
+            return serviceFee;
+        }
+
+        public void setServiceFee(Float serviceFee) {
+            this.serviceFee = serviceFee;
+        }
+
+        public Float getRefund() {
+            return refund;
+        }
+
+        public void setRefund(Float refund) {
+            this.refund = refund;
+        }
+    }
+
     public static class DetailedWeekSalesReportResponse {
         public String date;
         private List<Sales> sales;
