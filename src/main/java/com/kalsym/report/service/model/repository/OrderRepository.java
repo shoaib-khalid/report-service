@@ -21,7 +21,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             " osd.receiverName AS customerName, o.klCommission, o.deliveryCharges, o.serviceCharges, o.paymentStatus," +
             " o.completionStatus FROM symplified.`order` o INNER JOIN symplified.store s INNER JOIN symplified.client c" +
             " INNER JOIN symplified.order_shipment_detail osd ON o.storeId = s.id AND s.clientId = c.id AND o.id = osd.orderId" +
-            " WHERE o.storeId = :storeId AND o.created > :startDate AND o.created < :endDate AND o.paymentStatus = :status", nativeQuery = true)
+            " WHERE o.storeId = :storeId AND o.created > :startDate AND o.created < :endDate AND o.paymentStatus = :status ORDER BY o.created DESC", nativeQuery = true)
     List<Object[]> findAllByStoreIdAndDateRangeAndPaymentStatus(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("status") String status);
 
 }
