@@ -64,7 +64,10 @@ public class StoreReportsController {
     StoreSettlementsRepository storeSettlementsRepository;
 
     @GetMapping(value = "/report/dailySales", name = "store-report-dailySale-get")
-    public ResponseEntity<HttpResponse> dailySales(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId) throws Exception {
+    public ResponseEntity<HttpResponse> dailySales(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @RequestParam(defaultValue = "date", required = false) String sortBy,
+                                                   @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                                   @RequestParam(defaultValue = "0") int page,
+                                                   @RequestParam(defaultValue = "20") int pageSize,@PathVariable("storeId") String storeId) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -125,7 +128,7 @@ public class StoreReportsController {
             String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
             System.err.println("stDate: " + stDate);
             List<Object[]> orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatus(storeId, stDate, enDate, "Paid");
-            System.err.println("Orders: " + orders.get(1)[0].toString());
+//            System.err.println("Orders: " + orders.get(1)[0].toString());
             for (int k = 0; k < orders.size(); k++) {
                 Response.Sales sale = new Response.Sales();
                 sale.setStoreId(orders.get(k)[1].toString());
@@ -398,7 +401,10 @@ public class StoreReportsController {
     }
 
     @GetMapping(value = "/report/dailyTopProducts", name = "store-report-dailyTopProducts-get")
-    public ResponseEntity<HttpResponse> dailyTopProducts(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId) throws Exception {
+    public ResponseEntity<HttpResponse> dailyTopProducts(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @RequestParam(defaultValue = "date", required = false) String sortBy,
+                                                         @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
+                                                         @RequestParam(defaultValue = "0") int page,
+                                                         @RequestParam(defaultValue = "20") int pageSize, @PathVariable("storeId") String storeId) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -617,8 +623,11 @@ public class StoreReportsController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping(value="report/settlement", name="store-report-settlement-get")
-    public ResponseEntity<HttpResponse> settlement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "2021-01-01") String startDate, @RequestParam(required = false, defaultValue = "2021-12-31") String endDate, @PathVariable("storeId") String storeId) throws Exception {
+    @GetMapping(value="/settlement", name="store-report-settlement-get")
+    public ResponseEntity<HttpResponse> settlement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "2021-01-01") String startDate, @RequestParam(required = false, defaultValue = "2021-12-31") String endDate,  @RequestParam(defaultValue = "startDate", required = false) String sortBy,
+            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize,@PathVariable("storeId") String storeId) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -884,6 +893,7 @@ public class StoreReportsController {
             @PathVariable("storeId") String storeId) throws IOException {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
+        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
         String logPrefix = request.getRequestURI();
         Logger.application.info(logPrefix, "", "");
         Logger.application.info("querystring: " + request.getQueryString(), "");
