@@ -5,7 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+//import java.awt.print.Pageable;
 import java.util.List;
 
 @Repository
@@ -22,6 +25,6 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             " o.completionStatus, o.subTotal FROM symplified.`order` o INNER JOIN symplified.store s INNER JOIN symplified.client c" +
             " INNER JOIN symplified.order_shipment_detail osd ON o.storeId = s.id AND s.clientId = c.id AND o.id = osd.orderId" +
             " WHERE o.storeId = :storeId AND o.created > :startDate AND o.created < :endDate AND o.paymentStatus = :status ORDER BY o.created DESC", nativeQuery = true)
-    List<Object[]> findAllByStoreIdAndDateRangeAndPaymentStatus(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("status") String status);
+    List<Object[]> findAllByStoreIdAndDateRangeAndPaymentStatus(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("status") String status, Pageable pageable);
 
 }
