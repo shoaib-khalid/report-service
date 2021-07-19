@@ -158,6 +158,13 @@ public class StoreReportsController {
                     String emptyValue = "0.0";
                     sale.setServiceCharge(Float.parseFloat(emptyValue));
                 }
+                if (orders.get(k)[13] != null) {
+                    String subTotal = orders.get(k)[13].toString();
+                    sale.setSubTotal(Float.parseFloat(subTotal));
+                } else {
+                    String emptyValue = "0.0";
+                    sale.setSubTotal(Float.parseFloat(emptyValue));
+                }
                 sale.setOrderStatus(orders.get(k)[11].toString());
                 sale.setDeliveryStatus(orders.get(k)[12].toString());
                 reportResponseList.add(sale);
@@ -646,19 +653,25 @@ public class StoreReportsController {
         List<Object[]> settlements = storeSettlementsRepository.findByStoreIdAndDate(storeId, stDate, enDate);
 
         for (int k = 0; k < settlements.size(); k++) {
-            list.setMerchantName(settlements.get(k)[5].toString());
-            String gross = settlements.get(k)[7].toString();
+            list.setMerchantName(settlements.get(k)[3].toString());
+            String gross = settlements.get(k)[5].toString();
             list.setGross(Float.parseFloat(gross));
-            String serviceFee = settlements.get(k)[8].toString();
+            String serviceFee = settlements.get(k)[6].toString();
             list.setServiceFee(Float.parseFloat(serviceFee));
-            String commissionFee = settlements.get(k)[9].toString();
+            String commissionFee = settlements.get(k)[7].toString();
             list.setCommission(Float.parseFloat(commissionFee));
-            String refund = settlements.get(k)[10].toString();
+            String refund = settlements.get(k)[8].toString();
             list.setRefund(Float.parseFloat(refund));
             Float fee = Float.parseFloat(commissionFee) + Float.parseFloat(refund);
             list.setFees(fee);
-            String nett = settlements.get(k)[11].toString();
+            String nett = settlements.get(k)[9].toString();
             list.setNett(Float.parseFloat(nett));
+            if (settlements.get(k)[13] != null){
+                list.setSettlementDate(settlements.get(k)[13].toString());
+            } else {
+                String emptyString = "NULL";
+                list.setSettlementDate(emptyString);
+            }
         }
 
         lists.add(list);
