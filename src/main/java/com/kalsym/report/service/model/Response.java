@@ -113,7 +113,7 @@ public class Response {
         public Float gross;
         public Float fees;
         public Float nett;
-        public Float Commission;
+        public Float commission;
         public Float serviceFee;
         public Float refund;
         public String settlementDate;
@@ -151,12 +151,10 @@ public class Response {
         }
 
         public Float getCommission() {
-            return Commission;
+            return commission;
         }
 
-        public void setCommission(Float commission) {
-            Commission = commission;
-        }
+        public void setCommission(Float commission) { this.commission = commission; }
 
         public Float getServiceFee() {
             return serviceFee;
