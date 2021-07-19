@@ -41,6 +41,7 @@ public class Response {
         public String storeId;
         public String merchantName;
         public String storeName;
+        public Float subTotal;
         public Float total;
         public Float serviceCharge;
         public Float deliveryCharge;
@@ -88,6 +89,10 @@ public class Response {
         public Float getCommission() { return  commission; }
 
         public void setCommission(Float commission) { this.commission = commission; }
+
+        public Float getSubTotal() { return subTotal; }
+
+        public void setSubTotal(Float subTotal) { this.subTotal = subTotal; }
     }
 
     public static class DetailedSalesReportResponse {
@@ -111,6 +116,7 @@ public class Response {
         public Float Commission;
         public Float serviceFee;
         public Float refund;
+        public String settlementDate;
 
         public String getMerchantName() {
             return merchantName;
@@ -160,13 +166,13 @@ public class Response {
             this.serviceFee = serviceFee;
         }
 
-        public Float getRefund() {
-            return refund;
-        }
+        public Float getRefund() { return refund; }
 
-        public void setRefund(Float refund) {
-            this.refund = refund;
-        }
+        public void setRefund(Float refund) { this.refund = refund; }
+
+        public String getSettlementDate() { return settlementDate; }
+
+        public void setSettlementDate(String settlementDate) { this.settlementDate = settlementDate; }
     }
 
     public static class DetailedWeekSalesReportResponse {
