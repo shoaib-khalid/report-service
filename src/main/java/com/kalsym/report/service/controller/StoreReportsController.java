@@ -137,7 +137,7 @@ public class StoreReportsController {
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
             System.err.println("stDate: " + stDate);
-            List<Object[]> orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatus(storeId, stDate, enDate, "Paid", pageable);
+            List<Object[]> orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatus(storeId, stDate, enDate, "Paid");
 //            System.err.println("Orders: " + orders.get(1)[0].toString());
             for (int k = 0; k < orders.size(); k++) {
                 Response.Sales sale = new Response.Sales();
@@ -188,85 +188,85 @@ public class StoreReportsController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-//    @GetMapping(value = "/report/weeks/sales", name = "store-report-sale-get")
-//    public ResponseEntity<HttpResponse> salesWeeks(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") int startWeekNo, @RequestParam(required = false, defaultValue = "") int endWeekNo, @PathVariable("storeId") String storeId) throws Exception {
-//        HttpResponse response = new HttpResponse(request.getRequestURI());
-//        Date date = new Date();
-//
-//        int weekNo = endWeekNo - startWeekNo;
-//        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
-//        SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy");
-//
-//        Set<Response.DetailedWeekSalesReportResponse> lists = new HashSet<>();
-//        for (int i = 0; i <= weekNo; i++) {
-//            Response.DetailedWeekSalesReportResponse list = new Response.DetailedWeekSalesReportResponse();
-//            List<Response.Sales> reportResponseList = new ArrayList<>();
-//            Calendar cal = Calendar.getInstance();
-//            cal.setTime(date);
-//            int year = cal.get(Calendar.YEAR);
-//
-//            Calendar calendar = Calendar.getInstance();
-//            calendar.clear();
-//            calendar.set(Calendar.YEAR, year);
-//
-//            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
-//            calendar.set(Calendar.DAY_OF_WEEK, 1);
-//            // Now get the first day of week.
-//            Date sDate = calendar.getTime();
-//            System.out.println("Start Week Date :" + sDate);
-//
-//            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
-//            calendar.set(Calendar.DAY_OF_WEEK, 7);
-//            Date eDate = calendar.getTime();
-//            System.out.println("End week Date :" + eDate);
-//
-//            String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
-//            String endDate = myFormat.format(eDate.getTime()) + " 23:59:59";
-//
-//            List<Object[]> orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatus(storeId, stDate, endDate, "Paid");
-//
-//            for (int k = 0; k < orders.size(); k++) {
-//                Response.Sales sale = new Response.Sales();
-//                sale.setStoreId(orders.get(k)[1].toString());
-//                sale.setMerchantName(orders.get(k)[2].toString());
-//                sale.setStoreName(orders.get(k)[4].toString());
-//                String total = orders.get(k)[5].toString();
-//                sale.setTotal(Float.parseFloat(total));
-//                sale.setCustomerName(orders.get(k)[7].toString());
-//                if (orders.get(k)[8] != null){
-//                    String commission = orders.get(k)[8].toString();
-//                    sale.setCommission(Float.parseFloat(commission));
-//                } else {
-//                    String emptyValue = "0.0";
-//                    sale.setCommission(Float.parseFloat(emptyValue));
-//                }
-//                if (orders.get(k)[9] != null) {
-//                    String deliveryCharge = orders.get(k)[9].toString();
-//                    sale.setDeliveryCharge(Float.parseFloat(deliveryCharge));
-//                } else {
-//                    String emptyValue = "0.0";
-//                    sale.setDeliveryCharge(Float.parseFloat(emptyValue));
-//                }
-//                if (orders.get(k)[10] != null) {
-//                    String serviceCharge = orders.get(k)[10].toString();
-//                    sale.setServiceCharge(Float.parseFloat(serviceCharge));
-//                } else {
-//                    String emptyValue = "0.0";
-//                    sale.setServiceCharge(Float.parseFloat(emptyValue));
-//                }
-//                sale.setOrderStatus(orders.get(k)[11].toString());
-//                sale.setDeliveryStatus(orders.get(k)[12].toString());
-//                reportResponseList.add(sale);
-//            }
-//            list.setDate(myFormat.format(sDate.getTime()));
-//            list.setSales(reportResponseList);
-//            lists.add(list);
-//        }
-//
-//        response.setSuccessStatus(HttpStatus.OK);
-//        response.setData(lists);
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-//    }
+    @GetMapping(value = "/report/weeks/sales", name = "store-report-sale-get")
+    public ResponseEntity<HttpResponse> salesWeeks(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") int startWeekNo, @RequestParam(required = false, defaultValue = "") int endWeekNo, @PathVariable("storeId") String storeId) throws Exception {
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        Date date = new Date();
+
+        int weekNo = endWeekNo - startWeekNo;
+        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy");
+
+        Set<Response.DetailedWeekSalesReportResponse> lists = new HashSet<>();
+        for (int i = 0; i <= weekNo; i++) {
+            Response.DetailedWeekSalesReportResponse list = new Response.DetailedWeekSalesReportResponse();
+            List<Response.Sales> reportResponseList = new ArrayList<>();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            int year = cal.get(Calendar.YEAR);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.clear();
+            calendar.set(Calendar.YEAR, year);
+
+            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
+            calendar.set(Calendar.DAY_OF_WEEK, 1);
+            // Now get the first day of week.
+            Date sDate = calendar.getTime();
+            System.out.println("Start Week Date :" + sDate);
+
+            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
+            calendar.set(Calendar.DAY_OF_WEEK, 7);
+            Date eDate = calendar.getTime();
+            System.out.println("End week Date :" + eDate);
+
+            String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
+            String endDate = myFormat.format(eDate.getTime()) + " 23:59:59";
+
+            List<Object[]> orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatus(storeId, stDate, endDate, "Paid");
+
+            for (int k = 0; k < orders.size(); k++) {
+                Response.Sales sale = new Response.Sales();
+                sale.setStoreId(orders.get(k)[1].toString());
+                sale.setMerchantName(orders.get(k)[2].toString());
+                sale.setStoreName(orders.get(k)[4].toString());
+                String total = orders.get(k)[5].toString();
+                sale.setTotal(Float.parseFloat(total));
+                sale.setCustomerName(orders.get(k)[7].toString());
+                if (orders.get(k)[8] != null){
+                    String commission = orders.get(k)[8].toString();
+                    sale.setCommission(Float.parseFloat(commission));
+                } else {
+                    String emptyValue = "0.0";
+                    sale.setCommission(Float.parseFloat(emptyValue));
+                }
+                if (orders.get(k)[9] != null) {
+                    String deliveryCharge = orders.get(k)[9].toString();
+                    sale.setDeliveryCharge(Float.parseFloat(deliveryCharge));
+                } else {
+                    String emptyValue = "0.0";
+                    sale.setDeliveryCharge(Float.parseFloat(emptyValue));
+                }
+                if (orders.get(k)[10] != null) {
+                    String serviceCharge = orders.get(k)[10].toString();
+                    sale.setServiceCharge(Float.parseFloat(serviceCharge));
+                } else {
+                    String emptyValue = "0.0";
+                    sale.setServiceCharge(Float.parseFloat(emptyValue));
+                }
+                sale.setOrderStatus(orders.get(k)[11].toString());
+                sale.setDeliveryStatus(orders.get(k)[12].toString());
+                reportResponseList.add(sale);
+            }
+            list.setDate(myFormat.format(sDate.getTime()));
+            list.setSales(reportResponseList);
+            lists.add(list);
+        }
+
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(lists);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
     @GetMapping(value = "/report/weeklySales", name = "store-report-weeklySale-get")
     public ResponseEntity<HttpResponse> weeklySales(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") int startWeekNo, @RequestParam(required = false, defaultValue = "") int endWeekNo, @PathVariable("storeId") String storeId) {
@@ -640,7 +640,7 @@ public class StoreReportsController {
         response.setData(lists);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
+/*
     @GetMapping(value="/settlement", name="store-report-settlement-get")
     public ResponseEntity<HttpResponse> settlement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "2021-01-01") String startDate, @RequestParam(required = false, defaultValue = "2021-12-31") String endDate,  @RequestParam(defaultValue = "startDate", required = false) String sortBy,
             @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
@@ -690,7 +690,7 @@ public class StoreReportsController {
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(lists);
         return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+    }*/
 
     @GetMapping(value = "productInventory", name = "store-report-productInventory-get")
     public ResponseEntity<HttpResponse> productInventory(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String storeId, @RequestParam(required = false, defaultValue = "") Integer minTotal, @RequestParam(required = false, defaultValue = "") Integer maxTotal) throws IOException {
@@ -938,36 +938,36 @@ public class StoreReportsController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-//    @GetMapping(value = "/settlement")
-//    public ResponseEntity<HttpResponse> settlement(HttpServletRequest request,
-//            @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-//            @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
-//            @RequestParam(defaultValue = "startDate", required = false) String sortBy,
-//            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "20") int pageSize,
-//            @PathVariable("storeId") String storeId) throws IOException {
-//
-//        HttpResponse response = new HttpResponse(request.getRequestURI());
-//        String logPrefix = request.getRequestURI();
-//        Logger.application.info(logPrefix, "", "");
-//        Logger.application.info("querystring: " + request.getQueryString(), "");
-//        Logger.application.info("from: " + from.toString(), "");
-//        Logger.application.info("to: " + to.toString(), "");
-//        Logger.application.info("storeId: " + storeId, "");
-//
-//        Pageable pageable = null;
-//        if (sortingOrder.equalsIgnoreCase("desc")) {
-//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-//        } else {
-//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
-//        }
-//        Logger.application.info("pageable: " + pageable, "");
-//
-//        response.setSuccessStatus(HttpStatus.OK);
-//        response.setData(storeSettlementsRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
-//        return ResponseEntity.status(response.getStatus()).body(response);
-//    }
+    @GetMapping(value = "/settlement", name="store-report-settlement-get")
+    public ResponseEntity<HttpResponse> settlement(HttpServletRequest request,
+            @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+            @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+            @RequestParam(defaultValue = "startDate", required = false) String sortBy,
+            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @PathVariable("storeId") String storeId) throws IOException {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logPrefix = request.getRequestURI();
+        Logger.application.info(logPrefix, "", "");
+        Logger.application.info("querystring: " + request.getQueryString(), "");
+        Logger.application.info("from: " + from.toString(), "");
+        Logger.application.info("to: " + to.toString(), "");
+        Logger.application.info("storeId: " + storeId, "");
+
+        Pageable pageable = null;
+        if (sortingOrder.equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        } else {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+        }
+        Logger.application.info("pageable: " + pageable, "");
+
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(storeSettlementsRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 
     public static class Statement {
 
