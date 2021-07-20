@@ -53,7 +53,7 @@ public class SwaggerConfig {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("product-service")
+                .title("report-service")
                 .description("Used to manage users, roles, authorities for clients.")
                 .termsOfServiceUrl("not added yet")
                 .license("not added yet")

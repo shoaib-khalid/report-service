@@ -629,7 +629,7 @@ public class StoreReportsController {
         response.setData(lists);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
+/*
     @GetMapping(value="/settlement", name="store-report-settlement-get")
     public ResponseEntity<HttpResponse> settlement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "2021-01-01") String startDate, @RequestParam(required = false, defaultValue = "2021-12-31") String endDate,  @RequestParam(defaultValue = "startDate", required = false) String sortBy,
             @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
@@ -679,7 +679,7 @@ public class StoreReportsController {
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(lists);
         return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+    }*/
 
     @GetMapping(value = "productInventory", name = "store-report-productInventory-get")
     public ResponseEntity<HttpResponse> productInventory(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String storeId, @RequestParam(required = false, defaultValue = "") Integer minTotal, @RequestParam(required = false, defaultValue = "") Integer maxTotal) throws IOException {
@@ -927,36 +927,36 @@ public class StoreReportsController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-//    @GetMapping(value = "/settlement")
-//    public ResponseEntity<HttpResponse> settlement(HttpServletRequest request,
-//            @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-//            @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
-//            @RequestParam(defaultValue = "startDate", required = false) String sortBy,
-//            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "20") int pageSize,
-//            @PathVariable("storeId") String storeId) throws IOException {
-//
-//        HttpResponse response = new HttpResponse(request.getRequestURI());
-//        String logPrefix = request.getRequestURI();
-//        Logger.application.info(logPrefix, "", "");
-//        Logger.application.info("querystring: " + request.getQueryString(), "");
-//        Logger.application.info("from: " + from.toString(), "");
-//        Logger.application.info("to: " + to.toString(), "");
-//        Logger.application.info("storeId: " + storeId, "");
-//
-//        Pageable pageable = null;
-//        if (sortingOrder.equalsIgnoreCase("desc")) {
-//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-//        } else {
-//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
-//        }
-//        Logger.application.info("pageable: " + pageable, "");
-//
-//        response.setSuccessStatus(HttpStatus.OK);
-//        response.setData(storeSettlementsRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
-//        return ResponseEntity.status(response.getStatus()).body(response);
-//    }
+    @GetMapping(value = "/settlement", name="store-report-settlement-get")
+    public ResponseEntity<HttpResponse> settlement(HttpServletRequest request,
+            @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+            @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+            @RequestParam(defaultValue = "startDate", required = false) String sortBy,
+            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @PathVariable("storeId") String storeId) throws IOException {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logPrefix = request.getRequestURI();
+        Logger.application.info(logPrefix, "", "");
+        Logger.application.info("querystring: " + request.getQueryString(), "");
+        Logger.application.info("from: " + from.toString(), "");
+        Logger.application.info("to: " + to.toString(), "");
+        Logger.application.info("storeId: " + storeId, "");
+
+        Pageable pageable = null;
+        if (sortingOrder.equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        } else {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+        }
+        Logger.application.info("pageable: " + pageable, "");
+
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(storeSettlementsRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 
     public static class Statement {
 
