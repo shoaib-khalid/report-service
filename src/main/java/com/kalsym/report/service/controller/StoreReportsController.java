@@ -420,56 +420,56 @@ public class StoreReportsController {
 //
 //    }
 
-//    @GetMapping(value = "/report/dailyTopProducts", name = "store-report-dailyTopProducts-get")
-//    public ResponseEntity<HttpResponse> dailyTopProducts(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @RequestParam(defaultValue = "date", required = false) String sortBy,
-//                                                         @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
-//                                                         @RequestParam(defaultValue = "0") int page,
-//                                                         @RequestParam(defaultValue = "20") int pageSize, @PathVariable("storeId") String storeId) throws Exception {
-//        HttpResponse response = new HttpResponse(request.getRequestURI());
-//
-//        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
-//
-//        long diffInMillis = myFormat.parse(endDate).getTime() - myFormat.parse(startDate).getTime();
-//        long diff = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
-//        Set<Response.DailyTopProductResponse> lists = new HashSet<>();
-//        for (int i = 0; i <= diff; i++) {
-//            Response.DailyTopProductResponse list = new Response.DailyTopProductResponse();
-//            List<Response.DailyTopProduct> reportResponseList = new ArrayList<>();
-//
-//            Calendar sDate = Calendar.getInstance();
-//            try {
-//                sDate.setTime(myFormat.parse(startDate));
-//            } catch (ParseException e) {
-//                e.printStackTrace();
-//            }
-//            sDate.add(Calendar.DAY_OF_MONTH, i);
-//            String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
-//            String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
-//
-//            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, storeId, "PAID", 5);
-////            System.err.println("test obe: " + objects.get(1)[0].toString());
-////            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, 5);
-//
-//            for (int k = 0; k < objects.size(); k++) {
-//                Response.DailyTopProduct product = new Response.DailyTopProduct();
-//                String productCode = objects.get(k)[0].toString();
-//                System.err.println("productCode: " + productCode);
-//                Product product1 = productRepository.getOne(productCode);
-//                String totalValue = objects.get(k)[1].toString();
-//                product.setProductName(product1.getName());
-//                product.setTotalTransaction(Integer.parseInt(totalValue));
-//                product.setRank(k + 1);
-//                reportResponseList.add(product);
-//            }
-//            list.setDate(myFormat.format(sDate.getTime()));
-//            list.setTopProduct(reportResponseList);
-//            lists.add(list);
-//        }
-//
-//        response.setSuccessStatus(HttpStatus.OK);
-//        response.setData(lists);
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-//    }
+    @GetMapping(value = "/report/dailyTopProducts", name = "store-report-dailyTopProducts-get")
+    public ResponseEntity<HttpResponse> dailyTopProducts(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @RequestParam(defaultValue = "date", required = false) String sortBy,
+                                                         @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
+                                                         @RequestParam(defaultValue = "0") int page,
+                                                         @RequestParam(defaultValue = "20") int pageSize, @PathVariable("storeId") String storeId) throws Exception {
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        long diffInMillis = myFormat.parse(endDate).getTime() - myFormat.parse(startDate).getTime();
+        long diff = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
+        Set<Response.DailyTopProductResponse> lists = new HashSet<>();
+        for (int i = 0; i <= diff; i++) {
+            Response.DailyTopProductResponse list = new Response.DailyTopProductResponse();
+            List<Response.DailyTopProduct> reportResponseList = new ArrayList<>();
+
+            Calendar sDate = Calendar.getInstance();
+            try {
+                sDate.setTime(myFormat.parse(startDate));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            sDate.add(Calendar.DAY_OF_MONTH, i);
+            String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
+            String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
+
+            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, storeId, "PAID", 5);
+//            System.err.println("test obe: " + objects.get(1)[0].toString());
+//            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, 5);
+
+            for (int k = 0; k < objects.size(); k++) {
+                Response.DailyTopProduct product = new Response.DailyTopProduct();
+                String productCode = objects.get(k)[0].toString();
+                System.err.println("productCode: " + productCode);
+                Product product1 = productRepository.getOne(productCode);
+                String totalValue = objects.get(k)[1].toString();
+                product.setProductName(product1.getName());
+                product.setTotalTransaction(Integer.parseInt(totalValue));
+                product.setRank(k + 1);
+                reportResponseList.add(product);
+            }
+            list.setDate(myFormat.format(sDate.getTime()));
+            list.setTopProduct(reportResponseList);
+            lists.add(list);
+        }
+
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(lists);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
 //    @GetMapping(value = "/report/weeklyTopProducts", name = "store-report-weeklyTopProducts-get")
 //    public ResponseEntity<HttpResponse> weeklyTopProducts(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") int startWeekNo, @RequestParam(required = false, defaultValue = "") int endWeekNo, @PathVariable("storeId") String storeId) throws Exception {
@@ -908,37 +908,37 @@ public class StoreReportsController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @GetMapping(value = "/daily_top_products")
-    public ResponseEntity<HttpResponse> dailytTopProducts(HttpServletRequest request,
-            @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-            @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
-            @RequestParam(defaultValue = "date", required = false) String sortBy,
-            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int pageSize,
-            @PathVariable("storeId") String storeId) throws IOException {
-
-        HttpResponse response = new HttpResponse(request.getRequestURI());
-        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String logPrefix = request.getRequestURI();
-        Logger.application.info(logPrefix, "", "");
-        Logger.application.info("querystring: " + request.getQueryString(), "");
-        Logger.application.info("from: " + from.toString(), "");
-        Logger.application.info("to: " + to.toString(), "");
-        Logger.application.info("storeId: " + storeId, "");
-
-        Pageable pageable = null;
-        if (sortingOrder.equalsIgnoreCase("desc")) {
-            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-        } else {
-            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
-        }
-        Logger.application.info("pageable: " + pageable, "");
-
-        response.setSuccessStatus(HttpStatus.OK);
-        response.setData(storeDailyTopProductsRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
-        return ResponseEntity.status(response.getStatus()).body(response);
-    }
+//    @GetMapping(value = "/daily_top_products")
+//    public ResponseEntity<HttpResponse> dailytTopProducts(HttpServletRequest request,
+//            @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+//            @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+//            @RequestParam(defaultValue = "date", required = false) String sortBy,
+//            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "20") int pageSize,
+//            @PathVariable("storeId") String storeId) throws IOException {
+//
+//        HttpResponse response = new HttpResponse(request.getRequestURI());
+//        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
+//        String logPrefix = request.getRequestURI();
+//        Logger.application.info(logPrefix, "", "");
+//        Logger.application.info("querystring: " + request.getQueryString(), "");
+//        Logger.application.info("from: " + from.toString(), "");
+//        Logger.application.info("to: " + to.toString(), "");
+//        Logger.application.info("storeId: " + storeId, "");
+//
+//        Pageable pageable = null;
+//        if (sortingOrder.equalsIgnoreCase("desc")) {
+//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+//        } else {
+//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+//        }
+//        Logger.application.info("pageable: " + pageable, "");
+//
+//        response.setSuccessStatus(HttpStatus.OK);
+//        response.setData(storeDailyTopProductsRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
+//        return ResponseEntity.status(response.getStatus()).body(response);
+//    }
 
     @GetMapping(value = "/settlement", name="store-report-settlement-get")
     public ResponseEntity<HttpResponse> settlement(HttpServletRequest request,
