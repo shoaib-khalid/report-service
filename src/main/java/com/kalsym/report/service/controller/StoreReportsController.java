@@ -103,7 +103,7 @@ public class StoreReportsController {
     @GetMapping(value = "/report/detailedDailySales", name = "store-detail-report-sale-get")
     public ResponseEntity<HttpResponse> sales(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId,
                                               @RequestParam(defaultValue = "created", required = false) String sortBy,
-                                              @RequestParam(defaultValue = "ASC", required = false) String sortingOrder) throws Exception {
+                                              @RequestParam(defaultValue = "DESC", required = false) String sortingOrder) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -166,9 +166,12 @@ public class StoreReportsController {
                 sale.setDeliveryStatus(orders.get(k)[12].toString());
                 reportResponseList.add(sale);
             }
-            list.setDate(myFormat.format(sDate.getTime()));
-            list.setSales(reportResponseList);
-            lists.add(list);
+            if (!reportResponseList.isEmpty()) {
+                list.setDate(myFormat.format(sDate.getTime()));
+                list.setSales(reportResponseList);
+                lists.add(list);
+            }
+
         }
         response.setSuccessStatus(HttpStatus.OK);
         if (sortingOrder.equalsIgnoreCase("desc")) {
@@ -431,7 +434,7 @@ public class StoreReportsController {
 
         long diffInMillis = myFormat.parse(endDate).getTime() - myFormat.parse(startDate).getTime();
         long diff = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
-        Set<Response.DailyTopProductResponse> lists = new HashSet<>();
+        List<Response.DailyTopProductResponse> lists = new ArrayList<>();
         for (int i = 0; i <= diff; i++) {
             Response.DailyTopProductResponse list = new Response.DailyTopProductResponse();
             List<Response.DailyTopProduct> reportResponseList = new ArrayList<>();
@@ -461,12 +464,28 @@ public class StoreReportsController {
                 product.setRank(k + 1);
                 reportResponseList.add(product);
             }
-            list.setDate(myFormat.format(sDate.getTime()));
-            list.setTopProduct(reportResponseList);
-            lists.add(list);
+            if (!reportResponseList.isEmpty()){
+                list.setDate(myFormat.format(sDate.getTime()));
+                list.setTopProduct(reportResponseList);
+                lists.add(list);
+            }
         }
 
         response.setSuccessStatus(HttpStatus.OK);
+        if (sortingOrder.equalsIgnoreCase("desc")) {
+            Collections.sort(lists, new Comparator<Response.DailyTopProductResponse>() {
+                public int compare(Response.DailyTopProductResponse o1, Response.DailyTopProductResponse o2) {
+                    return o1.getDate().compareTo(o2.getDate());
+                }
+            });
+            Collections.reverse(lists);
+        } else {
+            Collections.sort(lists, new Comparator<Response.DailyTopProductResponse>() {
+                public int compare(Response.DailyTopProductResponse o1, Response.DailyTopProductResponse o2) {
+                    return o1.getDate().compareTo(o2.getDate());
+                }
+            });
+        }
         response.setData(lists);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
