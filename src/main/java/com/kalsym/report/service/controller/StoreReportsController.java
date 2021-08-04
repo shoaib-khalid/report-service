@@ -901,7 +901,7 @@ public class StoreReportsController {
             @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
             @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
             @RequestParam(defaultValue = "date", required = false) String sortBy,
-            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+            @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize,
             @PathVariable("storeId") String storeId) throws IOException {
