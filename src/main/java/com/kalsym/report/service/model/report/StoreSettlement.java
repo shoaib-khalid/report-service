@@ -29,9 +29,11 @@ public class StoreSettlement implements Serializable {
 
     private String clientId;
 
+    @Column(name = "cycleStartDate")
     @Temporal(TemporalType.DATE)
     private Date startDate;
 
+    @Column(name = "cycleEndDate")
     @Temporal(TemporalType.DATE)
     private Date endDate;
 
@@ -40,8 +42,10 @@ public class StoreSettlement implements Serializable {
 
     private Float totalTransactionValue;
     private Float totalServiceFee;
+    @Column(name = "totalCommisionFee")
     private Float commisionFee;
     private Float totalRefund;
+    @Column(name = "totalStoreShare")
     private Float totaltoBePayed;
 
     @Column(columnDefinition = "enum('PAID', 'AVAILABLE', 'RUNNING')")
