@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StoreSettlementsRepository extends JpaRepository<StoreSettlement, String> {
@@ -22,11 +23,12 @@ public interface StoreSettlementsRepository extends JpaRepository<StoreSettlemen
 //     * @param pageable
 //     * @return
 //     */
+    public Optional<StoreSettlement> findByStoreIdAndCycleStartDateAndCycleEndDate(String storeId, Date cycleStartDate, Date cycleEndDate);
 
-    @Query(value = "SELECT s FROM StoreSettlement s WHERE s.startDate >= :from AND s.endDate <= :to AND s.storeId=:storeId")
-    Page<StoreSettlement> findByStoreIdAndDateBetween(@Param("storeId") String storeId, @Param("from") Date from, @Param("to") Date to, Pageable pageable);
+    public Optional<StoreSettlement> findByReferenceId(String referenceId);
+
+    //Page<StoreSettlement> findByStoreIdAndDateBetween(@Param("storeId") String storeId, @Param("from") Date from, @Param("to") Date to, Pageable pageable);
 //    Page<StoreSettlement> findByStoreIdAndDateBetween( String storeId,Date from,  Date to, Pageable pageable);
 
-    @Query(value = "SELECT * FROM symplified.store_settlement s WHERE s.startDate > :from AND s.startDate < :to AND s.storeId=:storeId", nativeQuery = true)
-    List<Object[]> findByStoreIdAndDate(@Param("storeId") String storeId, @Param("from") String from, @Param("to") String to);
+    //List<Object[]> findByStoreIdAndDate(@Param("storeId") String storeId, @Param("from") String from, @Param("to") String to);
 }

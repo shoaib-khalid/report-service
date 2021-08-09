@@ -29,6 +29,11 @@ public class StoreDailySale implements Serializable {
     private Integer totalOrders;
     private Integer successFullOrders;
     private Integer canceledOrders;
-    private Float amountEarned;
+    private Double amountEarned;
+    private Double commision;
+    private Double totalAmount;
+    
+    
+    private String settlementReferenceId;
 
 }
