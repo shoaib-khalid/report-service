@@ -35,6 +35,7 @@ public class SessionRequestFilter extends OncePerRequestFilter {
     @Autowired
     private MySQLUserDetailsService jwtUserDetailsService;
 
+
     @Autowired
     RestTemplate restTemplate;
 
@@ -80,7 +81,7 @@ public class SessionRequestFilter extends OncePerRequestFilter {
 
                 if (authResponse.getStatusCode() == HttpStatus.ACCEPTED) {
                     ObjectMapper mapper = new ObjectMapper();
-                    Logger.application.warn(Logger.pattern, ReportServiceApplication.VERSION, logprefix, "data: " + authResponse.getBody().getData(), "");
+//                    Logger.application.warn(Logger.pattern, ReportServiceApplication.VERSION, logprefix, "data: " + authResponse.getBody().getData(), "");
 
                     auth = mapper.convertValue(authResponse.getBody().getData(), Auth.class);
                     username = auth.getSession().getUsername();
