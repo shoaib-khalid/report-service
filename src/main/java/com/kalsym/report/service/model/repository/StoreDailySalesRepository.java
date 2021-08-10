@@ -2,6 +2,7 @@ package com.kalsym.report.service.model.repository;
 
 import com.kalsym.report.service.model.report.StoreDailySale;
 import java.util.Date;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,6 +21,8 @@ public interface StoreDailySalesRepository extends JpaRepository<StoreDailySale,
      * @return
      */
     public Page<StoreDailySale> findByStoreIdAndDateBetween(String storeId, Date from, Date to, Pageable pageable);
+
+    public List<StoreDailySale> findByDateBetween(Date from, Date to);
 
     @Procedure("insertDailySales")
     public void insertDailySales();
