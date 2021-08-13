@@ -111,6 +111,7 @@ public class StoreReportsController {
         long diffInMillis = myFormat.parse(endDate).getTime() - myFormat.parse(startDate).getTime();
         long diff = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
         List<Response.DetailedSalesReportResponse> lists = new ArrayList<>();
+
         for (int i = 0; i <= diff; i++) {
             Response.DetailedSalesReportResponse list = new Response.DetailedSalesReportResponse();
             List<Response.Sales> reportResponseList = new ArrayList<>();
@@ -124,52 +125,104 @@ public class StoreReportsController {
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
             System.err.println("stDate: " + stDate);
-            List<Object[]> orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatus(storeId, stDate, enDate, "Paid", sortBy, sortingOrder);
-//            System.err.println("Orders: " + orders.get(1)[0].toString());
-            for (int k = 0; k < orders.size(); k++) {
-                Response.Sales sale = new Response.Sales();
-                sale.setStoreId(orders.get(k)[1].toString());
-                sale.setMerchantName(orders.get(k)[2].toString());
-                sale.setStoreName(orders.get(k)[4].toString());
-                String total = orders.get(k)[5].toString();
-                sale.setTotal(Float.parseFloat(total));
-                sale.setCustomerName(orders.get(k)[7].toString());
-                if (orders.get(k)[8] != null) {
-                    String commission = orders.get(k)[8].toString();
-                    sale.setCommission(Float.parseFloat(commission));
-                } else {
-                    String emptyValue = "0.0";
-                    sale.setCommission(Float.parseFloat(emptyValue));
+            if (storeId == "") {
+                List<Object[]> orders = orderRepository.findAllByDateRangeAndPaymentStatus(stDate, enDate, "Paid", sortBy, sortingOrder);
+                for (int k = 0; k < orders.size(); k++) {
+                    Response.Sales sale = new Response.Sales();
+                    sale.setStoreId(orders.get(k)[1].toString());
+                    sale.setMerchantName(orders.get(k)[2].toString());
+                    sale.setStoreName(orders.get(k)[4].toString());
+                    String total = orders.get(k)[5].toString();
+                    sale.setTotal(Float.parseFloat(total));
+                    sale.setCustomerName(orders.get(k)[7].toString());
+                    if (orders.get(k)[8] != null) {
+                        String commission = orders.get(k)[8].toString();
+                        sale.setCommission(Float.parseFloat(commission));
+                    } else {
+                        String emptyValue = "0.0";
+                        sale.setCommission(Float.parseFloat(emptyValue));
+                    }
+                    if (orders.get(k)[9] != null) {
+                        String deliveryCharge = orders.get(k)[9].toString();
+                        sale.setDeliveryCharge(Float.parseFloat(deliveryCharge));
+                    } else {
+                        String emptyValue = "0.0";
+                        sale.setDeliveryCharge(Float.parseFloat(emptyValue));
+                    }
+                    if (orders.get(k)[10] != null) {
+                        String serviceCharge = orders.get(k)[10].toString();
+                        sale.setServiceCharge(Float.parseFloat(serviceCharge));
+                    } else {
+                        String emptyValue = "0.0";
+                        sale.setServiceCharge(Float.parseFloat(emptyValue));
+                    }
+                    if (orders.get(k)[13] != null) {
+                        String subTotal = orders.get(k)[13].toString();
+                        sale.setSubTotal(Float.parseFloat(subTotal));
+                    } else {
+                        String emptyValue = "0.0";
+                        sale.setSubTotal(Float.parseFloat(emptyValue));
+                    }
+                    sale.setOrderStatus(orders.get(k)[11].toString());
+                    sale.setDeliveryStatus(orders.get(k)[12].toString());
+                    reportResponseList.add(sale);
                 }
-                if (orders.get(k)[9] != null) {
-                    String deliveryCharge = orders.get(k)[9].toString();
-                    sale.setDeliveryCharge(Float.parseFloat(deliveryCharge));
-                } else {
-                    String emptyValue = "0.0";
-                    sale.setDeliveryCharge(Float.parseFloat(emptyValue));
+                if (!reportResponseList.isEmpty()) {
+                    list.setDate(myFormat.format(sDate.getTime()));
+                    list.setSales(reportResponseList);
+                    lists.add(list);
                 }
-                if (orders.get(k)[10] != null) {
-                    String serviceCharge = orders.get(k)[10].toString();
-                    sale.setServiceCharge(Float.parseFloat(serviceCharge));
-                } else {
-                    String emptyValue = "0.0";
-                    sale.setServiceCharge(Float.parseFloat(emptyValue));
+            } else {
+                    List<Object[]> orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatus(storeId, stDate, enDate, "Paid", sortBy, sortingOrder);
+    //            System.err.println("Orders: " + orders.get(1)[0].toString());
+                    for (int k = 0; k < orders.size(); k++) {
+                        Response.Sales sale = new Response.Sales();
+                        sale.setStoreId(orders.get(k)[1].toString());
+                        sale.setMerchantName(orders.get(k)[2].toString());
+                        sale.setStoreName(orders.get(k)[4].toString());
+                        String total = orders.get(k)[5].toString();
+                        sale.setTotal(Float.parseFloat(total));
+                        sale.setCustomerName(orders.get(k)[7].toString());
+                        if (orders.get(k)[8] != null) {
+                            String commission = orders.get(k)[8].toString();
+                            sale.setCommission(Float.parseFloat(commission));
+                        } else {
+                            String emptyValue = "0.0";
+                            sale.setCommission(Float.parseFloat(emptyValue));
+                        }
+                        if (orders.get(k)[9] != null) {
+                            String deliveryCharge = orders.get(k)[9].toString();
+                            sale.setDeliveryCharge(Float.parseFloat(deliveryCharge));
+                        } else {
+                            String emptyValue = "0.0";
+                            sale.setDeliveryCharge(Float.parseFloat(emptyValue));
+                        }
+                        if (orders.get(k)[10] != null) {
+                            String serviceCharge = orders.get(k)[10].toString();
+                            sale.setServiceCharge(Float.parseFloat(serviceCharge));
+                        } else {
+                            String emptyValue = "0.0";
+                            sale.setServiceCharge(Float.parseFloat(emptyValue));
+                        }
+                        if (orders.get(k)[13] != null) {
+                            String subTotal = orders.get(k)[13].toString();
+                            sale.setSubTotal(Float.parseFloat(subTotal));
+                        } else {
+                            String emptyValue = "0.0";
+                            sale.setSubTotal(Float.parseFloat(emptyValue));
+                        }
+                        sale.setOrderStatus(orders.get(k)[11].toString());
+                        sale.setDeliveryStatus(orders.get(k)[12].toString());
+                        reportResponseList.add(sale);
+                    }
+                    if (!reportResponseList.isEmpty()) {
+                        list.setDate(myFormat.format(sDate.getTime()));
+                        list.setSales(reportResponseList);
+                        lists.add(list);
+                    }
                 }
-                if (orders.get(k)[13] != null) {
-                    String subTotal = orders.get(k)[13].toString();
-                    sale.setSubTotal(Float.parseFloat(subTotal));
-                } else {
-                    String emptyValue = "0.0";
-                    sale.setSubTotal(Float.parseFloat(emptyValue));
-                }
-                sale.setOrderStatus(orders.get(k)[11].toString());
-                sale.setDeliveryStatus(orders.get(k)[12].toString());
-                reportResponseList.add(sale);
             }
-            list.setDate(myFormat.format(sDate.getTime()));
-            list.setSales(reportResponseList);
-            lists.add(list);
-        }
+            
         response.setSuccessStatus(HttpStatus.OK);
         if (sortingOrder.equalsIgnoreCase("desc")) {
             Collections.sort(lists, new Comparator<Response.DetailedSalesReportResponse>() {
@@ -428,7 +481,7 @@ public class StoreReportsController {
 
         long diffInMillis = myFormat.parse(endDate).getTime() - myFormat.parse(startDate).getTime();
         long diff = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
-        Set<Response.DailyTopProductResponse> lists = new HashSet<>();
+        List<Response.DailyTopProductResponse> lists = new ArrayList<>();
         for (int i = 0; i <= diff; i++) {
             Response.DailyTopProductResponse list = new Response.DailyTopProductResponse();
             List<Response.DailyTopProduct> reportResponseList = new ArrayList<>();
@@ -458,12 +511,28 @@ public class StoreReportsController {
                 product.setRank(k + 1);
                 reportResponseList.add(product);
             }
-            list.setDate(myFormat.format(sDate.getTime()));
-            list.setTopProduct(reportResponseList);
-            lists.add(list);
+            if (!reportResponseList.isEmpty()) {
+                list.setDate(myFormat.format(sDate.getTime()));
+                list.setTopProduct(reportResponseList);
+                lists.add(list);
+            }
         }
 
         response.setSuccessStatus(HttpStatus.OK);
+        if (sortingOrder.equalsIgnoreCase("desc")) {
+            Collections.sort(lists, new Comparator<Response.DailyTopProductResponse>() {
+                public int compare(Response.DailyTopProductResponse o1, Response.DailyTopProductResponse o2) {
+                    return o1.getDate().compareTo(o2.getDate());
+                }
+            });
+            Collections.reverse(lists);
+        } else {
+            Collections.sort(lists, new Comparator<Response.DailyTopProductResponse>() {
+                public int compare(Response.DailyTopProductResponse o1, Response.DailyTopProductResponse o2) {
+                    return o1.getDate().compareTo(o2.getDate());
+                }
+            });
+        }
         response.setData(lists);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
