@@ -22,6 +22,8 @@ public interface StoreDailySalesRepository extends JpaRepository<StoreDailySale,
      */
     public Page<StoreDailySale> findByStoreIdAndDateBetween(String storeId, Date from, Date to, Pageable pageable);
 
+    public Page<StoreDailySale>findByDateBetween( Date from, Date to, Pageable pageable);
+
     public List<StoreDailySale> findByDateBetween(Date from, Date to);
 
     @Procedure("insertDailySales")
