@@ -59,8 +59,6 @@ public class ReportsGenerator {
         Date date = new Date();
         int cycle = getCycle(date);
         int dayOfWeek = getDayOfWeek(date);
-        Date startDate = getStartDate(cycle, dayOfWeek);
-        Date endDate = getEndDate(cycle, dayOfWeek);
 
         List<StoreDailySale> dailySales = null;
         Logger.application.info("reportSettlementTransactionsAmount: " + reportSettlementTransactionsAmount);
@@ -68,6 +66,8 @@ public class ReportsGenerator {
         if (reportSettlementTransactionsAmount.equalsIgnoreCase("ALL")) {
             dailySales = storeDailySalesRepository.findAll();
         } else {
+            Date startDate = getStartDate(cycle, dayOfWeek, null);
+            Date endDate = getEndDate(cycle, dayOfWeek, null);
             dailySales = storeDailySalesRepository.findByDateBetween(startDate, endDate);
         }
 
@@ -87,8 +87,8 @@ public class ReportsGenerator {
                 Logger.application.info("dailySaleCycle: " + dailySaleCycle);
                 Logger.application.info("dailySaleDayOfWeek: " + dailySaleDayOfWeek);
 
-                Date dailySaleStartDate = getStartDate(dailySaleCycle, dailySaleDayOfWeek);
-                Date dailySaleEndDate = getEndDate(dailySaleCycle, dailySaleDayOfWeek);
+                Date dailySaleStartDate = getStartDate(dailySaleCycle, dailySaleDayOfWeek, dailySale.getDate());
+                Date dailySaleEndDate = getEndDate(dailySaleCycle, dailySaleDayOfWeek, dailySale.getDate());
 
                 Date currentDate = new Date();
 
@@ -107,9 +107,13 @@ public class ReportsGenerator {
 
                     StoreSettlement dailySalesStoreSettlement = dailySalesStoreSettlementOpt.get();
                     Logger.application.info("found settlement: " + dailySalesStoreSettlement.getId());
+                    Logger.application.info("total comission: " + dailySalesStoreSettlement.getTotalCommisionFee());
+                    Logger.application.info("commision: " + dailySale.getCommision());
+                    Logger.application.info("totalServiceSettlement: " + dailySalesStoreSettlement.getTotalServiceFee());
+                    Logger.application.info("totalServiceSettlement: " + dailySalesStoreSettlement.getTotalServiceFee());
 
-                    dailySalesStoreSettlement.setTotalCommisionFee(dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
-                    dailySalesStoreSettlement.setTotalStoreShare(dailySalesStoreSettlement.getTotalServiceFee() + dailySale.getAmountEarned());
+                    //dailySalesStoreSettlement.setTotalCommisionFee(dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
+                    dailySalesStoreSettlement.setTotalStoreShare(dailySale.getAmountEarned());
                     dailySalesStoreSettlement.setSettlementStatus(status);
                     storeDailySalesRepository.save(dailySale);
                     storeSettlementsRepository.save(dailySalesStoreSettlement);
@@ -182,8 +186,16 @@ public class ReportsGenerator {
         return cycle;
     }
 
-    private Date getStartDate(int cycle, int dayOfWeek) {
-        Calendar calendar = Calendar.getInstance();
+    private Date getStartDate(int cycle, int dayOfWeek, Date date) {
+
+        Calendar calendar = null;
+        if (date != null) {
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+        } else {
+            calendar = Calendar.getInstance();
+
+        }
         int daysToMinus = 0;
 
         if (cycle == 1) {
@@ -217,15 +229,23 @@ public class ReportsGenerator {
 
         calendar.add(Calendar.DAY_OF_YEAR, daysToMinus);
 
-        Date date = calendar.getTime();
+        Date startDate = calendar.getTime();
 
-        Logger.application.info("for startDate date: " + date, "");
+        Logger.application.info("for startDate date: " + startDate, "");
 
-        return date;
+        return startDate;
     }
 
-    private Date getEndDate(int cycle, int dayOfWeek) {
-        Calendar calendar = Calendar.getInstance();
+    private Date getEndDate(int cycle, int dayOfWeek, Date date) {
+
+        Calendar calendar = null;
+        if (date != null) {
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+        } else {
+            calendar = Calendar.getInstance();
+
+        }
         int daysToAdd = 0;
 
         if (cycle == 1) {
@@ -259,11 +279,11 @@ public class ReportsGenerator {
 
         calendar.add(Calendar.DAY_OF_YEAR, daysToAdd);
 
-        Date date = calendar.getTime();
+        Date endDate = calendar.getTime();
 
-        Logger.application.info("for endDate date: " + date, "");
+        Logger.application.info("for endDate date: " + endDate, "");
 
-        return date;
+        return endDate;
     }
 
     private int getDayOfWeek(Date date) {
