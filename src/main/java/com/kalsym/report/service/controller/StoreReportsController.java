@@ -64,7 +64,7 @@ public class StoreReportsController {
     @GetMapping(value = "/report/detailedDailySales", name = "store-detail-report-sale-get")
     public ResponseEntity<HttpResponse> sales(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId,
             @RequestParam(defaultValue = "created", required = false) String sortBy,
-            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder) throws Exception {
+            @RequestParam(defaultValue = "DESC", required = false) String sortingOrder) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -244,194 +244,14 @@ public class StoreReportsController {
         response.setData(settlements);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-//    @GetMapping(value = "productInventory", name = "store-report-productInventory-get")
-//    public ResponseEntity<HttpResponse> productInventory(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String storeId, @RequestParam(required = false, defaultValue = "") Integer minTotal, @RequestParam(required = false, defaultValue = "") Integer maxTotal) throws IOException {
-//        HttpResponse response = new HttpResponse(request.getRequestURI());
-//        List<Product> products = productRepository.findAllByStoreId(storeId);
-//        Set<Response.ProductInventoryResponse> inventoryResponse = new HashSet<>();
-//        for (Product product : products) {
-//            List<ProductInventory> inventories = productInventoryRepository.findAllByProductIdAndQuantityGreaterThanEqualAndQuantityLessThanEqual(product.getId(), minTotal, maxTotal);
-//            Response.ProductInventoryResponse res = new Response.ProductInventoryResponse();
-//            for (ProductInventory in : inventories) {
-//                res.setProductName(in.getProduct().getName());
-//                res.setTotalStock(in.getQuantity());
-//                inventoryResponse.add(res);
-//            }
-//        }
-//        response.setSuccessStatus(HttpStatus.OK);
-//        response.setData(inventoryResponse);
-//
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-//    }
-//    @GetMapping(value = "/monthlyStatement")
-//    public ResponseEntity<HttpResponse> monthlyStatement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startMonth,
-//            @RequestParam(required = false, defaultValue = "") String endMonth,
-//            @PathVariable("storeId") String storeId) throws IOException {
-//        //TODO: Need to add Order Refund Value.
-//        HttpResponse response = new HttpResponse(request.getRequestURI());
-//        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
-//
-//        String[] m1 = startMonth.split("-");
-//        String[] m2 = endMonth.split("-");
-//        int month1 = Integer.parseInt(m1[0]);
-//        int month2 = Integer.parseInt(m2[0]);
-//        int year1 = Integer.parseInt(m1[1]);
-//        Integer year2 = Integer.parseInt(m2[1]);
-//        System.out.println("First Day of month: " + month1 + " First year " + year1 + " : Last month: " + month2 + " :last year :" + year2);
-//
-//        List<Response.MonthlyStatement> lists = new ArrayList<>();
-//        int totalMonth;
-//        if (year2.equals(year1)) {
-//            totalMonth = month2 - month1;
-//
-//            for (int i = 0; i <= totalMonth; i++) {
-//
-//                int m = month1 + i - 1;
-//
-//                Calendar cal = Calendar.getInstance();
-//                cal.clear();
-//                cal.set(Calendar.YEAR, year1);
-//                cal.set(Calendar.MONTH, m);
-//                cal.set(Calendar.DAY_OF_MONTH, 1);
-//
-//                int numOfDaysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-//
-//                String stDate = myFormat.format(cal.getTime()) + " 00:00:00";
-//                cal.add(Calendar.DAY_OF_MONTH, numOfDaysInMonth - 1);
-//
-//                String endDate = myFormat.format(cal.getTime()) + " 23:59:59";
-//
-//                List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, endDate, "Completed");
-//
-//                float totalValue = 0.00f;
-//                for (Order o : orders) {
-//                    if (o.getPaymentStatus().equals("Completed")) {
-//                        totalValue = totalValue + o.getTotal();
-//                    }
-//                }
-//                Response.MonthlyStatement monthlyStatement = new Response.MonthlyStatement();
-//                monthlyStatement.setMonth(new SimpleDateFormat("MM-yyyy").format(cal.getTime()));
-//                monthlyStatement.setMonthLabel(new SimpleDateFormat("MMM-yyyy").format(cal.getTime()));
-//                monthlyStatement.setTotalTrx(orders.size());
-//
-//                monthlyStatement.setTotalAmount(totalValue);
-//                monthlyStatement.setType("sales");
-//                lists.add(monthlyStatement);
-//
-//            }
-//        } else {
-//            totalMonth = (12 + month2) - month1;
-//
-//            for (int i = 0; i <= totalMonth; i++) {
-//                int m = month1 + i - 1;
-//                int year = year1;
-//                if (m > 12) {
-//                    m = month1 - 12;
-//                    year = year + 1;
-//                }
-//                Calendar cal = Calendar.getInstance();
-//                cal.clear();
-//                cal.set(Calendar.YEAR, year);
-//                cal.set(Calendar.MONTH, m);
-//                cal.set(Calendar.DAY_OF_MONTH, 1);
-//
-//                int numOfDaysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-//
-//                String stDate = myFormat.format(cal.getTime()) + " 00:00:00";
-//                cal.add(Calendar.DAY_OF_MONTH, numOfDaysInMonth - 1);
-//
-//                String endDate = myFormat.format(cal.getTime()) + " 23:59:59";
-//
-//                List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, endDate, "Completed");
-//
-//                float totalValue = 0.00f;
-//                for (Order o : orders) {
-//                    if (o.getPaymentStatus().equals("Completed")) {
-//                        totalValue = totalValue + o.getTotal();
-//                    }
-//                }
-//                Response.MonthlyStatement monthlyStatement = new Response.MonthlyStatement();
-//                monthlyStatement.setMonth(new SimpleDateFormat("MM-yyyy").format(cal.getTime()));
-//                monthlyStatement.setMonthLabel(new SimpleDateFormat("MMM-yyyy").format(cal.getTime()));
-//                monthlyStatement.setTotalTrx(orders.size());
-//
-//                monthlyStatement.setTotalAmount(totalValue);
-//                monthlyStatement.setType("sales");
-//                lists.add(monthlyStatement);
-//
-//            }
-//
-//        }
-//
-//        response.setSuccessStatus(HttpStatus.OK);
-//        response.setData(lists);
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-//    }
-//
-//    @GetMapping(value = "/weeklyStatement")
-//    public ResponseEntity<HttpResponse> weeklyStatement(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") Integer startWeekNo, @RequestParam(required = false, defaultValue = "") Integer endWeekNo, @PathVariable("storeId") String storeId) throws IOException {
-//        //TODO: Need to add Order Refund Value.
-//
-//        HttpResponse response = new HttpResponse(request.getRequestURI());
-//
-//        Date date = new Date();
-//        int weekNo = endWeekNo - startWeekNo;
-//        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
-//        SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy");
-//        Set<Response.WeeklyStatement> reportResponseList = new HashSet<>();
-//
-//        for (int i = 0; i <= weekNo; i++) {
-//            Calendar cal = Calendar.getInstance();
-//            cal.setTime(date);
-//            int year = cal.get(Calendar.YEAR);
-//
-//            Calendar calendar = Calendar.getInstance();
-//            calendar.clear();
-//            calendar.set(Calendar.YEAR, year);
-//
-//            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
-//            calendar.set(Calendar.DAY_OF_WEEK, 1);
-//            // Now get the first day of week.
-//            Date sDate = calendar.getTime();
-//            System.out.println("Start Week Date :" + sDate);
-//
-//            calendar.set(Calendar.WEEK_OF_YEAR, startWeekNo + i);
-//            calendar.set(Calendar.DAY_OF_WEEK, 7);
-//            Date eDate = calendar.getTime();
-//            System.out.println("End week Date :" + eDate);
-//
-//            String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
-//            String endDate = myFormat.format(eDate.getTime()) + " 23:59:59";
-//            List<Order> orders = orderRepository.findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(storeId, stDate, endDate, "Completed");
-//
-//            float totalValue = 0.00f;
-//            for (Order o : orders) {
-//                if (o.getPaymentStatus().equals("Completed")) {
-//                    totalValue = totalValue + o.getTotal();
-//                }
-//            }
-//            Response.WeeklyStatement weeklyStatement = new Response.WeeklyStatement();
-//            weeklyStatement.setWeekNo(startWeekNo + i);
-//            weeklyStatement.setTotalTrx(orders.size());
-//            weeklyStatement.setWeekLabel(f.format(sDate.getTime()) + " to " + f.format(eDate.getTime()));
-//
-//            weeklyStatement.setTotalAmount(totalValue);
-//            weeklyStatement.setType("sales");
-//            reportResponseList.add(weeklyStatement);
-//
-//        }
-//
-//        response.setSuccessStatus(HttpStatus.OK);
-//        response.setData(reportResponseList);
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-//    }
+
 
     @GetMapping(value = "/daily_sales")
     public ResponseEntity<HttpResponse> dailyReport(HttpServletRequest request,
             @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
             @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
             @RequestParam(defaultValue = "date", required = false) String sortBy,
-            @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+            @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize,
             @PathVariable("storeId") String storeId) throws IOException {
