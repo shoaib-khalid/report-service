@@ -2,15 +2,15 @@ package com.kalsym.report.service.model.report;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import com.kalsym.report.service.model.Store;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
+import javax.persistence.*;
 
 @Entity
 @Getter
@@ -32,7 +32,10 @@ public class StoreDailySale implements Serializable {
     private Double amountEarned;
     private Double commision;
     private Double totalAmount;
-    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "storeId", insertable = false, updatable = false)
+    @Fetch(FetchMode.JOIN)
+    private Store store;
     
     private String settlementReferenceId;
 
