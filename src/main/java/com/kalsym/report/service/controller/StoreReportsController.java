@@ -141,10 +141,17 @@ public class StoreReportsController {
                 sale.setDeliveryStatus(orders.get(k)[12].toString());
                 reportResponseList.add(sale);
             }
-            list.setDate(myFormat.format(sDate.getTime()));
+          /*  list.setDate(myFormat.format(sDate.getTime()));
             list.setSales(reportResponseList);
-            lists.add(list);
+            lists.add(list);*/
+            if (reportResponseList != null) {
+                list.setDate(myFormat.format(sDate.getTime()));
+                list.setSales(reportResponseList);
+                lists.add(list);
+            }
         }
+
+
         response.setSuccessStatus(HttpStatus.OK);
         if (sortingOrder.equalsIgnoreCase("desc")) {
             Collections.sort(lists, new Comparator<Response.DetailedSalesReportResponse>() {
@@ -205,9 +212,15 @@ public class StoreReportsController {
                 product.setRank(k + 1);
                 reportResponseList.add(product);
             }
-            list.setDate(myFormat.format(sDate.getTime()));
+          /*  list.setDate(myFormat.format(sDate.getTime()));
             list.setTopProduct(reportResponseList);
-            lists.add(list);
+            lists.add(list);*/
+
+            if (reportResponseList != null) {
+                list.setDate(myFormat.format(sDate.getTime()));
+                list.setTopProduct(reportResponseList);
+                lists.add(list);
+            }
         }
 
         response.setSuccessStatus(HttpStatus.OK);
