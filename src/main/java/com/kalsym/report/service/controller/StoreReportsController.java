@@ -144,7 +144,7 @@ public class StoreReportsController {
           /*  list.setDate(myFormat.format(sDate.getTime()));
             list.setSales(reportResponseList);
             lists.add(list);*/
-            if (reportResponseList != null) {
+            if (!reportResponseList.isEmpty()) {
                 list.setDate(myFormat.format(sDate.getTime()));
                 list.setSales(reportResponseList);
                 lists.add(list);
@@ -216,7 +216,7 @@ public class StoreReportsController {
             list.setTopProduct(reportResponseList);
             lists.add(list);*/
 
-            if (reportResponseList != null) {
+            if (!reportResponseList.isEmpty()) {
                 list.setDate(myFormat.format(sDate.getTime()));
                 list.setTopProduct(reportResponseList);
                 lists.add(list);
