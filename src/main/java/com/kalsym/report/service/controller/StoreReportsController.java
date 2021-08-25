@@ -251,7 +251,12 @@ public class StoreReportsController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<StoreSettlement> example = Example.of(storeSettlement, matcher);
 
-        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        Pageable pageable = null;
+        if (sortingOrder.equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        } else {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+        }
         Page<StoreSettlement> settlements = storeSettlementsRepository.findAll(getStoreSettlementsSpec(from, to, example), pageable);
 
         response.setSuccessStatus(HttpStatus.OK);
