@@ -212,9 +212,6 @@ public class StoreReportsController {
                 product.setRank(k + 1);
                 reportResponseList.add(product);
             }
-          /*  list.setDate(myFormat.format(sDate.getTime()));
-            list.setTopProduct(reportResponseList);
-            lists.add(list);*/
 
             if (!reportResponseList.isEmpty()) {
                 list.setDate(myFormat.format(sDate.getTime()));
