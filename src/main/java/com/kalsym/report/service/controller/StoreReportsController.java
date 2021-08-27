@@ -238,8 +238,9 @@ public class StoreReportsController {
         String logprefix = request.getRequestURI() + " ";
 
         StoreSettlement storeSettlement = new StoreSettlement();
-        storeSettlement.setStoreId(storeId);
-
+        if (!storeId.equals("null")) {
+            storeSettlement.setStoreId(storeId);
+        }
         Logger.application.info(Logger.pattern, ReportServiceApplication.VERSION, logprefix, "before from : " + from + ", to : " + to);
 
         Calendar calendar = Calendar.getInstance();
