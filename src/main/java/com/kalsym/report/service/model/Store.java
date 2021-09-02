@@ -1,13 +1,13 @@
 package com.kalsym.report.service.model;
 
 import java.io.Serializable;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 
 /**
@@ -27,6 +27,14 @@ public class Store implements Serializable {
     private String id;
 
     private String name;
+
+    private String address;
+    private String city;
+    private String postcode;
+    private String state;
+    private String email;
+    private String phone;
+    private String verticalCode;
 
     private String regionCountryId;
 

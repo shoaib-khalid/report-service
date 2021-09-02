@@ -2,45 +2,40 @@ package com.kalsym.report.service.service;
 
 import com.kalsym.report.service.model.SettlementStatus;
 import com.kalsym.report.service.model.Store;
-import com.kalsym.report.service.model.report.StoreSettlement;
 import com.kalsym.report.service.model.report.StoreDailySale;
+import com.kalsym.report.service.model.report.StoreSettlement;
 import com.kalsym.report.service.model.repository.OrderRepository;
 import com.kalsym.report.service.model.repository.StoreDailySalesRepository;
 import com.kalsym.report.service.model.repository.StoreRepository;
 import com.kalsym.report.service.model.repository.StoreSettlementsRepository;
-import java.util.Calendar;
-import java.util.Date;
 import com.kalsym.report.service.utils.Logger;
 import com.kalsym.report.service.utils.TxIdUtil;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
 /**
- *
  * @author saros
  */
 @Service
 public class ReportsGenerator {
 
-    @Autowired
-    StoreDailySalesRepository storeDailySalesRepository;
-
-    @Autowired
-    StoreSettlementsRepository storeSettlementsRepository;
-
-    @Autowired
-    OrderRepository orderRepository;
-
-    @Autowired
-    StoreRepository storeRepository;
-
     private final Integer[] cycle1 = {3, 4, 5};
     private final Integer[] cycle2 = {6, 7, 1, 2};
-
+    @Autowired
+    StoreDailySalesRepository storeDailySalesRepository;
+    @Autowired
+    StoreSettlementsRepository storeSettlementsRepository;
+    @Autowired
+    OrderRepository orderRepository;
+    @Autowired
+    StoreRepository storeRepository;
     //ALL is for beginning to end, CURRENT is for current date and cycle
     @Value("${report.settlement.transactions.amount:ALL}")
     private String reportSettlementTransactionsAmount;
@@ -115,6 +110,8 @@ public class ReportsGenerator {
                     //dailySalesStoreSettlement.setTotalCommisionFee(dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
                     dailySalesStoreSettlement.setTotalStoreShare(dailySale.getAmountEarned());
                     dailySalesStoreSettlement.setSettlementStatus(status);
+                    dailySalesStoreSettlement.setTotalServiceFee(dailySale.getTotalServiceCharge());
+                    dailySalesStoreSettlement.setTotalDeliveryFee(dailySale.getTotalDeliveryFee());
                     storeDailySalesRepository.save(dailySale);
                     storeSettlementsRepository.save(dailySalesStoreSettlement);
                 } else {
@@ -125,14 +122,17 @@ public class ReportsGenerator {
                     dailySalesStoreSettlement.setTotalStoreShare(dailySale.getAmountEarned());
                     dailySalesStoreSettlement.setSettlementStatus(status);
                     dailySalesStoreSettlement.setSettlementDate(settlementDate);
+                    dailySalesStoreSettlement.setTotalServiceFee(dailySale.getTotalServiceCharge());
+                    dailySalesStoreSettlement.setTotalDeliveryFee(dailySale.getTotalDeliveryFee());
 
                     Optional<Store> storeOpt = storeRepository.findById(storeId);
 
                     String settlementStoreNameAbbreviation = "";
                     String settlementStoreCountryId = "";
                     if (storeOpt.isPresent()) {
+                        Store store = storeRepository.getOne(storeId);
                         Store settlementStore = storeOpt.get();
-                        dailySalesStoreSettlement.setStoreId(storeId);
+                        dailySalesStoreSettlement.setStore(store);
                         settlementStoreNameAbbreviation = settlementStore.getNameAbreviation();
                         settlementStoreCountryId = settlementStore.getRegionCountryId();
                         dailySalesStoreSettlement.setStoreName(settlementStore.getName());
