@@ -3,6 +3,7 @@ package com.kalsym.report.service.controller;
 import com.kalsym.report.service.ReportServiceApplication;
 import com.kalsym.report.service.model.Product;
 import com.kalsym.report.service.model.Response;
+import com.kalsym.report.service.model.Store;
 import com.kalsym.report.service.model.report.StoreSettlement;
 import com.kalsym.report.service.model.repository.*;
 import com.kalsym.report.service.service.ReportsGenerator;
@@ -55,6 +56,8 @@ public class StoreReportsController {
     StoreSettlementsRepository storeSettlementsRepository;
     @Autowired
     ReportsGenerator reportsGenerator;
+    @Autowired
+    StoreRepository storeRepository;
 
     public static Specification<StoreSettlement> getStoreSettlementsSpec(
             Date from, Date to, Example<StoreSettlement> example) {
@@ -237,9 +240,12 @@ public class StoreReportsController {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logprefix = request.getRequestURI() + " ";
 
+
         StoreSettlement storeSettlement = new StoreSettlement();
         if (!storeId.equals("null")) {
-            storeSettlement.setStoreId(storeId);
+            Store store = storeRepository.getOne(storeId);
+            System.out.println("STORE DETAIL :" + store.toString());
+            storeSettlement.setStore(store);
         }
         Logger.application.info(Logger.pattern, ReportServiceApplication.VERSION, logprefix, "before from : " + from + ", to : " + to);
 
