@@ -99,6 +99,8 @@ public class ReportsGenerator {
                 Optional<StoreSettlement> dailySalesStoreSettlementOpt = storeSettlementsRepository.findByStoreIdAndCycleStartDateAndCycleEndDate(storeId, dailySaleStartDate, dailySaleEndDate);
 
                 if (dailySalesStoreSettlementOpt.isPresent()) {
+                    Logger.application.info("StartDate " + dailySaleStartDate + " endDate " + dailySaleEndDate);
+
 
                     StoreSettlement dailySalesStoreSettlement = dailySalesStoreSettlementOpt.get();
                     Logger.application.info("found settlement: " + dailySalesStoreSettlement.getId());
@@ -115,6 +117,8 @@ public class ReportsGenerator {
                     storeDailySalesRepository.save(dailySale);
                     storeSettlementsRepository.save(dailySalesStoreSettlement);
                 } else {
+                    Logger.application.info("StartDate " + dailySaleStartDate + " endDate " + dailySaleEndDate);
+
                     Logger.application.info("settlement not present creating new");
                     StoreSettlement dailySalesStoreSettlement = new StoreSettlement();
 
@@ -150,9 +154,40 @@ public class ReportsGenerator {
 
                     storeDailySalesRepository.save(dailySale);
                     storeSettlementsRepository.save(dailySalesStoreSettlement);
-
                 }
             } else {
+
+                int dailySaleCycle = getCycle(dailySale.getDate());
+
+                int dailySaleDayOfWeek = getDayOfWeek(dailySale.getDate());
+
+                Logger.application.info("dailySaleDate: " + dailySale.getDate());
+
+                Logger.application.info("dailySaleCycle: " + dailySaleCycle);
+                Logger.application.info("dailySaleDayOfWeek: " + dailySaleDayOfWeek);
+
+                Date dailySaleStartDate = getStartDate(dailySaleCycle, dailySaleDayOfWeek, dailySale.getDate());
+                Date dailySaleEndDate = getEndDate(dailySaleCycle, dailySaleDayOfWeek, dailySale.getDate());
+                Date settlementDate = getSettlementDate(dailySaleEndDate, dailySaleCycle);
+
+                Date currentDate = new Date();
+
+                SettlementStatus status = SettlementStatus.CLOSED;
+
+                if (currentDate.after(settlementDate)) {
+                    status = SettlementStatus.AVAILABLE;
+                }
+                Optional<StoreSettlement> dailySalesStoreSettlementOpt = storeSettlementsRepository.findByReferenceIdAndSettlementStatus(dailySale.getSettlementReferenceId(), SettlementStatus.CLOSED);
+
+                if (dailySalesStoreSettlementOpt.isPresent()) {
+                    StoreSettlement dailySalesStoreSettlement = dailySalesStoreSettlementOpt.get();
+                    dailySalesStoreSettlement.setSettlementStatus(status);
+                    storeSettlementsRepository.save(dailySalesStoreSettlement);
+                } else {
+                    Logger.application.info("settlement not present creating new");
+
+                }
+
                 Logger.application.info("settlement id already set, no need to recalculate");
 
             }
