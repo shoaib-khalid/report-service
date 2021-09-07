@@ -351,7 +351,7 @@ public class StoreReportsController {
 
     @PostMapping(value = "/settlement", name = "store-report-settlement-post")
     public ResponseEntity<HttpResponse> settlement(HttpServletRequest request,
-                                                   @PathVariable("storeId") String storeId) {
+                                                   @PathVariable("storeId") String storeId) throws ParseException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         reportsGenerator.dailySalesScheduler();

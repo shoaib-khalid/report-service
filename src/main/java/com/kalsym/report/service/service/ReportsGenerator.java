@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -40,8 +42,15 @@ public class ReportsGenerator {
     @Value("${report.settlement.transactions.amount:ALL}")
     private String reportSettlementTransactionsAmount;
 
+    public static Date getDateWithoutTimeUsingFormat(Date date)
+            throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat(
+                "yyyy-MM-dd");
+        return formatter.parse(formatter.format(new Date()));
+    }
+
     @Scheduled(cron = "${schudler.dailysales.cron:0 58 23 * * ?}")
-    public void dailySalesScheduler() {
+    public void dailySalesScheduler() throws ParseException {
         storeDailySalesRepository.insertDailySales();
         Logger.application.info("inserted daily store sales");
 
@@ -54,7 +63,9 @@ public class ReportsGenerator {
         Date date = new Date();
         int cycle = getCycle(date);
         int dayOfWeek = getDayOfWeek(date);
-
+//        switch (dayOfWeek) {
+//            case 4:
+//            case 6:
         List<StoreDailySale> dailySales = null;
         Logger.application.info("reportSettlementTransactionsAmount: " + reportSettlementTransactionsAmount);
 
@@ -96,28 +107,32 @@ public class ReportsGenerator {
 
                 Date settlementDate = getSettlementDate(dailySaleEndDate, dailySaleCycle);
 
-                Optional<StoreSettlement> dailySalesStoreSettlementOpt = storeSettlementsRepository.findByStoreIdAndCycleStartDateAndCycleEndDate(storeId, dailySaleStartDate, dailySaleEndDate);
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "yyyy-MM-dd");
+                String startDate = simpleDateFormat.format(dailySaleStartDate);
+                String endDate = simpleDateFormat.format(dailySaleEndDate);
+                Optional<StoreSettlement> dailySalesStoreSettlementOpt = storeSettlementsRepository.findByStoreIdAndCycleStartDateAndCycleEndDate(storeId, startDate, endDate);
 
                 if (dailySalesStoreSettlementOpt.isPresent()) {
-                    Logger.application.info("StartDate " + dailySaleStartDate + " endDate " + dailySaleEndDate);
-
-
                     StoreSettlement dailySalesStoreSettlement = dailySalesStoreSettlementOpt.get();
                     Logger.application.info("found settlement: " + dailySalesStoreSettlement.getId());
-                    Logger.application.info("total comission: " + dailySalesStoreSettlement.getTotalCommisionFee());
+                    Logger.application.info("TotalCommission : " + dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
                     Logger.application.info("commision: " + dailySale.getCommision());
                     Logger.application.info("totalServiceSettlement: " + dailySalesStoreSettlement.getTotalServiceFee());
                     Logger.application.info("totalServiceSettlement: " + dailySalesStoreSettlement.getTotalServiceFee());
 
-                    //dailySalesStoreSettlement.setTotalCommisionFee(dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
-                    dailySalesStoreSettlement.setTotalStoreShare(dailySale.getAmountEarned());
+
+                    dailySalesStoreSettlement.setTotalCommisionFee(dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
+                    dailySalesStoreSettlement.setTotalStoreShare(dailySalesStoreSettlement.getTotalStoreShare() + dailySale.getAmountEarned());
                     dailySalesStoreSettlement.setSettlementStatus(status);
-                    dailySalesStoreSettlement.setTotalServiceFee(dailySale.getTotalServiceCharge());
-                    dailySalesStoreSettlement.setTotalDeliveryFee(dailySale.getTotalDeliveryFee());
+                    dailySalesStoreSettlement.setReferenceId(dailySalesStoreSettlement.getReferenceId());
+                    dailySalesStoreSettlement.setTotalServiceFee(dailySalesStoreSettlement.getTotalServiceFee() + dailySale.getTotalServiceCharge());
+                    dailySalesStoreSettlement.setTotalDeliveryFee(dailySalesStoreSettlement.getTotalServiceFee() + dailySale.getTotalDeliveryFee());
+                    dailySale.setSettlementReferenceId(dailySalesStoreSettlement.getReferenceId());
+
                     storeDailySalesRepository.save(dailySale);
                     storeSettlementsRepository.save(dailySalesStoreSettlement);
+
                 } else {
-                    Logger.application.info("StartDate " + dailySaleStartDate + " endDate " + dailySaleEndDate);
 
                     Logger.application.info("settlement not present creating new");
                     StoreSettlement dailySalesStoreSettlement = new StoreSettlement();
@@ -147,8 +162,8 @@ public class ReportsGenerator {
                     String settlementReferenceId = TxIdUtil.generateReferenceId(settlementStoreCountryId + settlementStoreNameAbbreviation);
 
                     dailySalesStoreSettlement.setReferenceId(settlementReferenceId);
-                    dailySalesStoreSettlement.setCycleStartDate(dailySaleStartDate);
-                    dailySalesStoreSettlement.setCycleEndDate(dailySaleEndDate);
+                    dailySalesStoreSettlement.setCycleStartDate(startDate);
+                    dailySalesStoreSettlement.setCycleEndDate(endDate);
 
                     dailySale.setSettlementReferenceId(settlementReferenceId);
 
@@ -192,15 +207,19 @@ public class ReportsGenerator {
 
             }
         }
+//                break;
+//        }
+
+
     }
 
     private int getCycle(Date date) {
         int cycle = 0;
 
         //Calendar.DAY_OF_WEEK will retun value like this
-        //sunday=1, monday=2, tuesday=3, wednesday=4, thursday=5, friday=6, saturday=7 
+        //sunday=1, monday=2, tuesday=3, wednesday=4, thursday=5, friday=6, saturday=7
         //we need to convert it so
-        //monday=1, tuesday=2, wednesday=3, thursday=4, friday=5, saturday=6, sunday=7 
+        //monday=1, tuesday=2, wednesday=3, thursday=4, friday=5, saturday=6, sunday=7
         int dayOfWeek = getDayOfWeek(date);
         Logger.application.info("symplified dayOfWeek: " + dayOfWeek, "");
 

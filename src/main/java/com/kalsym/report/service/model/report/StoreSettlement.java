@@ -46,8 +46,8 @@ public class StoreSettlement implements Serializable {
     @Enumerated(EnumType.STRING)
     private SettlementStatus settlementStatus;
 
-    private Date cycleStartDate;
-    private Date cycleEndDate;
+    private String cycleStartDate;
+    private String cycleEndDate;
 
     private Date settlementDate;
     private String referenceId;
