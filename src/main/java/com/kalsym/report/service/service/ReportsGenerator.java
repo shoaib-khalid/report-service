@@ -95,6 +95,8 @@ public class ReportsGenerator {
 
                 Date dailySaleStartDate = getStartDate(dailySaleCycle, dailySaleDayOfWeek, dailySale.getDate());
                 Date dailySaleEndDate = getEndDate(dailySaleCycle, dailySaleDayOfWeek, dailySale.getDate());
+                Date settlementDate = getSettlementDate(dailySaleEndDate, dailySaleCycle);
+
 
                 Date currentDate = new Date();
 
@@ -102,10 +104,12 @@ public class ReportsGenerator {
                 if (currentDate.after(dailySaleEndDate)) {
                     status = SettlementStatus.CLOSED;
                 }
+                if (currentDate.after(settlementDate)) {
+                    status = SettlementStatus.AVAILABLE;
+                }
 
                 String storeId = dailySale.getStoreId();
 
-                Date settlementDate = getSettlementDate(dailySaleEndDate, dailySaleCycle);
 
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 String startDate = simpleDateFormat.format(dailySaleStartDate);
@@ -114,9 +118,9 @@ public class ReportsGenerator {
 
                 if (dailySalesStoreSettlementOpt.isPresent()) {
                     StoreSettlement dailySalesStoreSettlement = dailySalesStoreSettlementOpt.get();
-                    Logger.application.info("found settlement: " + dailySalesStoreSettlement.getId());
+                    Logger.application.info("Found settlement: " + dailySalesStoreSettlement.getId());
                     Logger.application.info("TotalCommission : " + dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
-                    Logger.application.info("commision: " + dailySale.getCommision());
+                    Logger.application.info("commission: " + dailySale.getCommision());
                     Logger.application.info("totalServiceSettlement: " + dailySalesStoreSettlement.getTotalServiceFee());
                     Logger.application.info("totalServiceSettlement: " + dailySalesStoreSettlement.getTotalServiceFee());
 
@@ -172,42 +176,41 @@ public class ReportsGenerator {
                     storeDailySalesRepository.save(dailySale);
                     storeSettlementsRepository.save(dailySalesStoreSettlement);
                 }
-            } else {
-
-                int dailySaleCycle = getCycle(dailySale.getDate());
-
-                int dailySaleDayOfWeek = getDayOfWeek(dailySale.getDate());
-
-                Logger.application.info("dailySaleDate: " + dailySale.getDate());
-
-                Logger.application.info("dailySaleCycle: " + dailySaleCycle);
-                Logger.application.info("dailySaleDayOfWeek: " + dailySaleDayOfWeek);
-
-                Date dailySaleStartDate = getStartDate(dailySaleCycle, dailySaleDayOfWeek, dailySale.getDate());
-                Date dailySaleEndDate = getEndDate(dailySaleCycle, dailySaleDayOfWeek, dailySale.getDate());
-                Date settlementDate = getSettlementDate(dailySaleEndDate, dailySaleCycle);
-
-                Date currentDate = new Date();
-
-                SettlementStatus status = SettlementStatus.CLOSED;
-
-                if (currentDate.after(settlementDate)) {
-                    status = SettlementStatus.AVAILABLE;
-                }
-                Optional<StoreSettlement> dailySalesStoreSettlementOpt = storeSettlementsRepository.findByReferenceIdAndSettlementStatus(dailySale.getSettlementReferenceId(), SettlementStatus.CLOSED);
-
-                if (dailySalesStoreSettlementOpt.isPresent()) {
-                    StoreSettlement dailySalesStoreSettlement = dailySalesStoreSettlementOpt.get();
-                    dailySalesStoreSettlement.setSettlementStatus(status);
-                    storeSettlementsRepository.save(dailySalesStoreSettlement);
-                } else {
-                    Logger.application.info("settlement not present creating new");
-
-                }
-
-                Logger.application.info("settlement id already set, no need to recalculate");
-
             }
+//            } else {
+//
+//                int dailySaleCycle = getCycle(dailySale.getDate());
+//
+//                int dailySaleDayOfWeek = getDayOfWeek(dailySale.getDate());
+//
+//                Logger.application.info("dailySaleDate: " + dailySale.getDate());
+//                Logger.application.info("dailySaleCycle: " + dailySaleCycle);
+//                Logger.application.info("dailySaleDayOfWeek: " + dailySaleDayOfWeek);
+//
+//                Date dailySaleEndDate = getEndDate(dailySaleCycle, dailySaleDayOfWeek, dailySale.getDate());
+//                Date settlementDate = getSettlementDate(dailySaleEndDate, dailySaleCycle);
+//
+//                Date currentDate = new Date();
+//
+//                SettlementStatus status = SettlementStatus.CLOSED;
+//
+//                if (currentDate.after(settlementDate)) {
+//                    status = SettlementStatus.AVAILABLE;
+//                }
+//                Optional<StoreSettlement> dailySalesStoreSettlementOpt = storeSettlementsRepository.findByReferenceIdAndSettlementStatus(dailySale.getSettlementReferenceId(), SettlementStatus.CLOSED);
+//
+//                if (dailySalesStoreSettlementOpt.isPresent()) {
+//                    StoreSettlement dailySalesStoreSettlement = dailySalesStoreSettlementOpt.get();
+//                    dailySalesStoreSettlement.setSettlementStatus(status);
+//                    storeSettlementsRepository.save(dailySalesStoreSettlement);
+//                } else {
+//                    Logger.application.info("settlement not present creating new");
+//
+//                }
+//
+//                Logger.application.info("settlement id already set, no need to recalculate");
+//
+//            }
         }
 //                break;
 //        }
