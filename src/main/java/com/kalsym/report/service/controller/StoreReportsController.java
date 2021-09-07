@@ -243,9 +243,7 @@ public class StoreReportsController {
 
         StoreSettlement storeSettlement = new StoreSettlement();
         if (!storeId.equals("null")) {
-            Store store = storeRepository.getOne(storeId);
-            System.out.println("STORE DETAIL :" + store.toString());
-            storeSettlement.setStore(store);
+            storeSettlement.setStoreId(storeId);
         }
         Logger.application.info(Logger.pattern, ReportServiceApplication.VERSION, logprefix, "before from : " + from + ", to : " + to);
 

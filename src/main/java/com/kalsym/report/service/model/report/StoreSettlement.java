@@ -26,11 +26,8 @@ public class StoreSettlement implements Serializable {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
     private String cycle;
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "storeId")
-    @Fetch(FetchMode.JOIN)
-    Store store;
+
+    private String storeId;
     private String clientId;
     private String clientName;
     private String storeName;
