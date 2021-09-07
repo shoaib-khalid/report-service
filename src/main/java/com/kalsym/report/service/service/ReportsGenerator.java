@@ -155,9 +155,9 @@ public class ReportsGenerator {
                     String settlementStoreNameAbbreviation = "";
                     String settlementStoreCountryId = "";
                     if (storeOpt.isPresent()) {
-                        Store store = storeRepository.getOne(storeId);
+
                         Store settlementStore = storeOpt.get();
-                        dailySalesStoreSettlement.setStore(store);
+                        dailySalesStoreSettlement.setStoreId(storeId);
                         settlementStoreNameAbbreviation = settlementStore.getNameAbreviation();
                         settlementStoreCountryId = settlementStore.getRegionCountryId();
                         dailySalesStoreSettlement.setStoreName(settlementStore.getName());
