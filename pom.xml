@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.kalsym</groupId>
     <artifactId>report-service</artifactId>
-    <version>3.0.4-STAGING</version>
+    <version>3.0.5-STAGING</version>
     <packaging>jar</packaging>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -17,8 +17,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     
-    
-    
+
     <dependencies>
         <!--spring boot web-->
         <dependency>
