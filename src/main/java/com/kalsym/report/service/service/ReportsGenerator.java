@@ -107,7 +107,7 @@ public class ReportsGenerator {
 
                 Date settlementDate = getSettlementDate(dailySaleEndDate, dailySaleCycle);
 
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "yyyy-MM-dd");
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 String startDate = simpleDateFormat.format(dailySaleStartDate);
                 String endDate = simpleDateFormat.format(dailySaleEndDate);
                 Optional<StoreSettlement> dailySalesStoreSettlementOpt = storeSettlementsRepository.findByStoreIdAndCycleStartDateAndCycleEndDate(storeId, startDate, endDate);
@@ -124,6 +124,7 @@ public class ReportsGenerator {
                     dailySalesStoreSettlement.setTotalCommisionFee(dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
                     dailySalesStoreSettlement.setTotalStoreShare(dailySalesStoreSettlement.getTotalStoreShare() + dailySale.getAmountEarned());
                     dailySalesStoreSettlement.setSettlementStatus(status);
+                    dailySalesStoreSettlement.setTotalTransactionValue(dailySalesStoreSettlement.getTotalTransactionValue() + dailySale.getTotalAmount());
                     dailySalesStoreSettlement.setReferenceId(dailySalesStoreSettlement.getReferenceId());
                     dailySalesStoreSettlement.setTotalServiceFee(dailySalesStoreSettlement.getTotalServiceFee() + dailySale.getTotalServiceCharge());
                     dailySalesStoreSettlement.setTotalDeliveryFee(dailySalesStoreSettlement.getTotalServiceFee() + dailySale.getTotalDeliveryFee());
@@ -139,6 +140,7 @@ public class ReportsGenerator {
 
                     dailySalesStoreSettlement.setTotalCommisionFee(dailySale.getCommision());
                     dailySalesStoreSettlement.setTotalStoreShare(dailySale.getAmountEarned());
+                    dailySalesStoreSettlement.setTotalTransactionValue(dailySale.getTotalAmount());
                     dailySalesStoreSettlement.setSettlementStatus(status);
                     dailySalesStoreSettlement.setSettlementDate(settlementDate);
                     dailySalesStoreSettlement.setTotalServiceFee(dailySale.getTotalServiceCharge());
