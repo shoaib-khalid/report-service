@@ -234,7 +234,7 @@ public class StoreReportsController {
                                                    @RequestParam(required = false, defaultValue = "2021-12-01") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
                                                    @PathVariable String storeId,
                                                    @RequestParam(defaultValue = "cycleStartDate", required = false) String sortBy,
-                                                   @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                                   @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                    @RequestParam(defaultValue = "0") int page,
                                                    @RequestParam(defaultValue = "20") int pageSize) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
