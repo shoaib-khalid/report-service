@@ -265,6 +265,7 @@ public class StoreReportsController {
             sortBy = "cycleEndDate";
         }
 
+
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
