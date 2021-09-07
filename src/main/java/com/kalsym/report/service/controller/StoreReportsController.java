@@ -60,7 +60,7 @@ public class StoreReportsController {
     StoreRepository storeRepository;
 
     public static Specification<StoreSettlement> getStoreSettlementsSpec(
-            Date from, Date to, Example<StoreSettlement> example) {
+            String from, String to, Example<StoreSettlement> example) {
         return (Specification<StoreSettlement>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
             if (from != null && to != null) {
@@ -249,12 +249,16 @@ public class StoreReportsController {
         }
         Logger.application.info(Logger.pattern, ReportServiceApplication.VERSION, logprefix, "before from : " + from + ", to : " + to);
 
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "yyyy-MM-dd");
+        String startDate = simpleDateFormat.format(from);
+        String endDate = simpleDateFormat.format(to);
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(to);
         calendar.add(Calendar.HOUR, 23);
         calendar.add(Calendar.MINUTE, 59);
         to = calendar.getTime();
-        Logger.application.info(Logger.pattern, ReportServiceApplication.VERSION, logprefix, "before from : " + from + ", to : " + to);
+        Logger.application.info(Logger.pattern, ReportServiceApplication.VERSION, logprefix, "before from : " + startDate + ", to : " + endDate);
         if (sortBy.contains("from")) {
             sortBy = "cycleStartDate";
         } else {
@@ -274,7 +278,7 @@ public class StoreReportsController {
         } else {
             pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
         }
-        Page<StoreSettlement> settlements = storeSettlementsRepository.findAll(getStoreSettlementsSpec(from, to, example), pageable);
+        Page<StoreSettlement> settlements = storeSettlementsRepository.findAll(getStoreSettlementsSpec(startDate, endDate, example), pageable);
 
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(settlements);
