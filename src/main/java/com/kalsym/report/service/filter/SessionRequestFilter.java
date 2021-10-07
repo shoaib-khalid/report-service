@@ -1,5 +1,6 @@
 package com.kalsym.report.service.filter;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.kalsym.report.service.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kalsym.report.service.ReportServiceApplication;
@@ -81,7 +82,7 @@ public class SessionRequestFilter extends OncePerRequestFilter {
 
                 if (authResponse.getStatusCode() == HttpStatus.ACCEPTED) {
                     ObjectMapper mapper = new ObjectMapper();
-//                    Logger.application.warn(Logger.pattern, ReportServiceApplication.VERSION, logprefix, "data: " + authResponse.getBody().getData(), "");
+                    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);//                    Logger.application.warn(Logger.pattern, ReportServiceApplication.VERSION, logprefix, "data: " + authResponse.getBody().getData(), "");
 
                     auth = mapper.convertValue(authResponse.getBody().getData(), Auth.class);
                     username = auth.getSession().getUsername();
