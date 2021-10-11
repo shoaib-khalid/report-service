@@ -1,0 +1,6 @@
+Version 3.0.7-PRODUCTION
+--------------------------------
+Date:07-Oct-2021
+Developer:Kumar
+
+1. Fixed bug for user authentication in (Session Filter Class)
