@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -17,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
  * @author 7cu
  */
 @SpringBootApplication
+@EnableScheduling
 public class ReportServiceApplication implements CommandLineRunner {
 
     private static Logger logger = LoggerFactory.getLogger("application");
@@ -35,7 +37,7 @@ public class ReportServiceApplication implements CommandLineRunner {
     private Environment env;
 
     public static void main(String... args) {
-        logger.info("Staring order-service...");
+        logger.info("Staring report-service...");
         SpringApplication.run(ReportServiceApplication.class, args);
     }
 
