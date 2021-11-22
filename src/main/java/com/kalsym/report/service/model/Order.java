@@ -1,5 +1,6 @@
 package com.kalsym.report.service.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Getter
@@ -33,5 +36,8 @@ public class Order implements Serializable {
     private String privateAdminNotes;
     private String cartId;
     private String customerId;
-    private String created;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date created;
 }
