@@ -126,7 +126,7 @@ public class StoreReportsController {
 
             Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
             if (!storeId.equals("null")) {
-                orders = orderRepository.findAll(getSpecWithDatesBetween(sDate.getTime(),sDate.getTime(), OrderStatus.PAID, orderExample), pageable);
+                orders = orderRepository.findAll(getSpecWithDatesBetween(sDate.getTime(), sDate.getTime(), OrderStatus.PAID, orderExample), pageable);
             } else {
 //                orders = orderRepository.findAllByDateRangeAndPaymentStatus(stDate, enDate, "Paid", sortBy, sortingOrder);
             }
@@ -215,13 +215,13 @@ public class StoreReportsController {
                 predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
             }
             if (completionStatus==OrderStatus.PAID) {
-                Predicate predicateForOnlinePayment = builder.equal(root.get("paymentStatus"), completionStatus);
-                Predicate predicateForCompletionStatus = builder.equal(root.get("paymentStatus"), OrderStatus.PAID);
+                Predicate predicateForOnlinePayment = builder.equal(root.get("paymentStatus"), "PAID");
+                Predicate predicateForCompletionStatus = builder.equal(root.get("paymentStatus"), "PAID");
                 Predicate predicateForCOD = builder.and(predicateForCompletionStatus);
                 Predicate finalPredicate = builder.or(predicateForOnlinePayment, predicateForCOD);
                 predicates.add(finalPredicate);
             } else if (completionStatus!=null) {
-                predicates.add(builder.equal(root.get("paymentStatus"), completionStatus));
+                predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
             }
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
