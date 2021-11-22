@@ -1,12 +1,14 @@
 package com.kalsym.report.service.controller;
 
 import com.kalsym.report.service.ReportServiceApplication;
+import com.kalsym.report.service.model.Order;
 import com.kalsym.report.service.model.Product;
 import com.kalsym.report.service.model.Response;
 import com.kalsym.report.service.model.Store;
 import com.kalsym.report.service.model.report.StoreSettlement;
 import com.kalsym.report.service.model.repository.*;
 import com.kalsym.report.service.service.ReportsGenerator;
+import com.kalsym.report.service.service.enums.OrderStatus;
 import com.kalsym.report.service.utils.HttpResponse;
 import com.kalsym.report.service.utils.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,104 +76,157 @@ public class StoreReportsController {
     }
 
     @GetMapping(value = "/report/detailedDailySales", name = "store-detail-report-sale-get")
-    public ResponseEntity<HttpResponse> sales(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @PathVariable("storeId") String storeId,
+    public ResponseEntity<HttpResponse> sales(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+                                              @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
+                                              @PathVariable("storeId") String storeId,
                                               @RequestParam(defaultValue = "created", required = false) String sortBy,
-                                              @RequestParam(defaultValue = "DESC", required = false) String sortingOrder) throws Exception {
+                                              @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
+                                              @RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "20") int pageSize
+    ) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        long diffInMillis = myFormat.parse(endDate).getTime() - myFormat.parse(startDate).getTime();
+        long diffInMillis = endDate.getTime() - startDate.getTime();
         long diff = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
         List<Response.DetailedSalesReportResponse> lists = new ArrayList<>();
+
         for (int i = 0; i <= diff; i++) {
             Response.DetailedSalesReportResponse list = new Response.DetailedSalesReportResponse();
             List<Response.Sales> reportResponseList = new ArrayList<>();
             Calendar sDate = Calendar.getInstance();
-            try {
-                sDate.setTime(myFormat.parse(startDate));
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            sDate.setTime(startDate);
             sDate.add(Calendar.DAY_OF_MONTH, i);
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
-            System.err.println("storeId: " + storeId);
-            List<Object[]> orders;
+            System.err.println(" myFormat.format(sDate.getTime())  : " +  myFormat.format(sDate.getTime()) );
+            Page<Order> orders = null;
+
+            SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+
+            System.err.println("(format1.parse(stDate) :  " +  sDate.getTime() );
+
+
+
+
+
+            Order orderMatch = new Order();
+            if (storeId != null && !storeId.isEmpty()) {
+                orderMatch.setStoreId(storeId);
+            }
+
+
+            ExampleMatcher matcher = ExampleMatcher
+                    .matchingAll()
+                    .withIgnoreCase()
+                    .withIgnoreNullValues()
+                    .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+            Example<Order> orderExample = Example.of(orderMatch, matcher);
+
+            Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
             if (!storeId.equals("null")) {
-                orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatus(storeId, stDate, enDate, "Paid", sortBy, sortingOrder);
+                orders = orderRepository.findAll(getSpecWithDatesBetween(sDate.getTime(),sDate.getTime(), OrderStatus.PAID, orderExample), pageable);
             } else {
-                orders = orderRepository.findAllByDateRangeAndPaymentStatus(stDate, enDate, "Paid", sortBy, sortingOrder);
+//                orders = orderRepository.findAllByDateRangeAndPaymentStatus(stDate, enDate, "Paid", sortBy, sortingOrder);
             }
+            System.out.println(orders);
 //            System.err.println("Orders: " + orders.get(1)[0].toString());
-            for (int k = 0; k < orders.size(); k++) {
-                Response.Sales sale = new Response.Sales();
-                sale.setStoreId(orders.get(k)[1].toString());
-                sale.setMerchantName(orders.get(k)[2].toString());
-                sale.setStoreName(orders.get(k)[4].toString());
-                String total = orders.get(k)[5].toString();
-                sale.setTotal(Float.parseFloat(total));
-                sale.setCustomerName(orders.get(k)[7].toString());
-                if (orders.get(k)[8] != null) {
-                    String commission = orders.get(k)[8].toString();
-                    sale.setCommission(Float.parseFloat(commission));
-                } else {
-                    String emptyValue = "0.0";
-                    sale.setCommission(Float.parseFloat(emptyValue));
-                }
-                if (orders.get(k)[9] != null) {
-                    String deliveryCharge = orders.get(k)[9].toString();
-                    sale.setDeliveryCharge(Float.parseFloat(deliveryCharge));
-                } else {
-                    String emptyValue = "0.0";
-                    sale.setDeliveryCharge(Float.parseFloat(emptyValue));
-                }
-                if (orders.get(k)[10] != null) {
-                    String serviceCharge = orders.get(k)[10].toString();
-                    sale.setServiceCharge(Float.parseFloat(serviceCharge));
-                } else {
-                    String emptyValue = "0.0";
-                    sale.setServiceCharge(Float.parseFloat(emptyValue));
-                }
-                if (orders.get(k)[13] != null) {
-                    String subTotal = orders.get(k)[13].toString();
-                    sale.setSubTotal(Float.parseFloat(subTotal));
-                } else {
-                    String emptyValue = "0.0";
-                    sale.setSubTotal(Float.parseFloat(emptyValue));
-                }
-                sale.setOrderStatus(orders.get(k)[11].toString());
-                sale.setDeliveryStatus(orders.get(k)[12].toString());
-                reportResponseList.add(sale);
-            }
+//            for (int k = 0; k < orders.size(); k++) {
+//                Response.Sales sale = new Response.Sales();
+//                sale.setStoreId(orders.get(k)[1].toString());
+//                sale.setMerchantName(orders.get(k)[2].toString());
+//                sale.setStoreName(orders.get(k)[4].toString());
+//                String total = orders.get(k)[5].toString();
+//                sale.setTotal(Float.parseFloat(total));
+//                sale.setCustomerName(orders.get(k)[7].toString());
+//                if (orders.get(k)[8] != null) {
+//                    String commission = orders.get(k)[8].toString();
+//                    sale.setCommission(Float.parseFloat(commission));
+//                } else {
+//                    String emptyValue = "0.0";
+//                    sale.setCommission(Float.parseFloat(emptyValue));
+//                }
+//                if (orders.get(k)[9] != null) {
+//                    String deliveryCharge = orders.get(k)[9].toString();
+//                    sale.setDeliveryCharge(Float.parseFloat(deliveryCharge));
+//                } else {
+//                    String emptyValue = "0.0";
+//                    sale.setDeliveryCharge(Float.parseFloat(emptyValue));
+//                }
+//                if (orders.get(k)[10] != null) {
+//                    String serviceCharge = orders.get(k)[10].toString();
+//                    sale.setServiceCharge(Float.parseFloat(serviceCharge));
+//                } else {
+//                    String emptyValue = "0.0";
+//                    sale.setServiceCharge(Float.parseFloat(emptyValue));
+//                }
+//                if (orders.get(k)[13] != null) {
+//                    String subTotal = orders.get(k)[13].toString();
+//                    sale.setSubTotal(Float.parseFloat(subTotal));
+//                } else {
+//                    String emptyValue = "0.0";
+//                    sale.setSubTotal(Float.parseFloat(emptyValue));
+//                }
+//                sale.setOrderStatus(orders.get(k)[11].toString());
+//                sale.setDeliveryStatus(orders.get(k)[12].toString());
+//                reportResponseList.add(sale);
+//            }
           /*  list.setDate(myFormat.format(sDate.getTime()));
             list.setSales(reportResponseList);
             lists.add(list);*/
-            if (!reportResponseList.isEmpty()) {
-                list.setDate(myFormat.format(sDate.getTime()));
-                list.setSales(reportResponseList);
-                lists.add(list);
-            }
+//            if (!reportResponseList.isEmpty()) {
+//                list.setDate(myFormat.format(sDate.getTime()));
+//                list.setSales(reportResponseList);
+//                lists.add(list);
+//            }
         }
 
 
         response.setSuccessStatus(HttpStatus.OK);
-        if (sortingOrder.equalsIgnoreCase("desc")) {
-            Collections.sort(lists, new Comparator<Response.DetailedSalesReportResponse>() {
-                public int compare(Response.DetailedSalesReportResponse o1, Response.DetailedSalesReportResponse o2) {
-                    return o1.getDate().compareTo(o2.getDate());
-                }
-            });
-            Collections.reverse(lists);
-        } else {
-            Collections.sort(lists, new Comparator<Response.DetailedSalesReportResponse>() {
-                public int compare(Response.DetailedSalesReportResponse o1, Response.DetailedSalesReportResponse o2) {
-                    return o1.getDate().compareTo(o2.getDate());
-                }
-            });
-        }
-        response.setData(lists);
+//        if (sortingOrder.equalsIgnoreCase("desc")) {
+//            Collections.sort(lists, new Comparator<Response.DetailedSalesReportResponse>() {
+//                public int compare(Response.DetailedSalesReportResponse o1, Response.DetailedSalesReportResponse o2) {
+//                    return o1.getDate().compareTo(o2.getDate());
+//                }
+//            });
+//            Collections.reverse(lists);
+//        } else {
+//            Collections.sort(lists, new Comparator<Response.DetailedSalesReportResponse>() {
+//                public int compare(Response.DetailedSalesReportResponse o1, Response.DetailedSalesReportResponse o2) {
+//                    return o1.getDate().compareTo(o2.getDate());
+//                }
+//            });
+//        }
+        response.setData("lists");
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+    public Specification<Order> getSpecWithDatesBetween(
+            Date from, Date to, OrderStatus completionStatus, Example<Order> example) {
+
+        return (Specification<Order>) (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+
+            if (from != null && to != null) {
+                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
+            }
+            if (completionStatus==OrderStatus.PAID) {
+                Predicate predicateForOnlinePayment = builder.equal(root.get("paymentStatus"), completionStatus);
+                Predicate predicateForCompletionStatus = builder.equal(root.get("paymentStatus"), OrderStatus.PAID);
+                Predicate predicateForCOD = builder.and(predicateForCompletionStatus);
+                Predicate finalPredicate = builder.or(predicateForOnlinePayment, predicateForCOD);
+                predicates.add(finalPredicate);
+            } else if (completionStatus!=null) {
+                predicates.add(builder.equal(root.get("paymentStatus"), completionStatus));
+            }
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
     }
 
     @GetMapping(value = "/report/dailyTopProducts", name = "store-report-dailyTopProducts-get")
