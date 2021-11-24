@@ -1,3 +1,4 @@
+
 package com.kalsym.report.service.model;
 
 import java.io.Serializable;
