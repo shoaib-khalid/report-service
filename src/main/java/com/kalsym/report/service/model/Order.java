@@ -2,14 +2,16 @@ package com.kalsym.report.service.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.Date;
 
 @Entity
@@ -33,13 +35,14 @@ public class Order implements Serializable {
     private String customerNotes;
     private String privateAdminNotes;
     private String cartId;
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "customerId", insertable = false, updatable = false)
-//    @Fetch(FetchMode.JOIN)
-//    private Customer customer;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customerId" )
+    @NotFound(action = NotFoundAction.IGNORE)
+    private Customer customer;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "storeId", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Store store;
 
     @Temporal(TemporalType.TIMESTAMP)

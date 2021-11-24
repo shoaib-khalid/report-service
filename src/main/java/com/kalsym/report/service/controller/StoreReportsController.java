@@ -5,6 +5,8 @@ import com.kalsym.report.service.model.Order;
 import com.kalsym.report.service.model.Product;
 import com.kalsym.report.service.model.Response;
 import com.kalsym.report.service.model.Store;
+import com.kalsym.report.service.model.report.ProductDailySale;
+import com.kalsym.report.service.model.report.StoreDailySale;
 import com.kalsym.report.service.model.report.StoreSettlement;
 import com.kalsym.report.service.model.repository.*;
 import com.kalsym.report.service.service.ReportsGenerator;
@@ -53,6 +55,9 @@ public class StoreReportsController {
 
     @Autowired
     StoreDailyTopProductsRepository storeDailyTopProductsRepository;
+
+    @Autowired
+    ProductDailySalesRepository productDailySalesRepository;
 
     @Autowired
     StoreSettlementsRepository storeSettlementsRepository;
@@ -192,7 +197,7 @@ public class StoreReportsController {
         Order orderMatch = new Order();
         if (storeId != null && !storeId.isEmpty()) {
             Store store = storeRepository.getOne(storeId);
-//            orderMatch.setStore(store);
+            orderMatch.setStore(store);
         }
 
 
@@ -211,31 +216,7 @@ public class StoreReportsController {
     }
 
 
-    public Specification<Order> getSpecWithDatesBetween(
-            Date from, Date to, OrderStatus completionStatus, Example<Order> example) {
 
-        return (Specification<Order>) (root, query, builder) -> {
-            final List<Predicate> predicates = new ArrayList<>();
-
-            if (from != null && to != null) {
-                to.setDate(to.getDate() + 1);
-                predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
-                predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
-            }
-            if (completionStatus == OrderStatus.PAID) {
-                Predicate predicateForOnlinePayment = builder.equal(root.get("paymentStatus"), "PAID");
-                Predicate predicateForCompletionStatus = builder.equal(root.get("paymentStatus"), "PAID");
-                Predicate predicateForCOD = builder.and(predicateForCompletionStatus);
-                Predicate finalPredicate = builder.or(predicateForOnlinePayment, predicateForCOD);
-                predicates.add(finalPredicate);
-            } else if (completionStatus != null) {
-                predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
-            }
-            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
-
-            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
-        };
-    }
 
     @GetMapping(value = "/report/dailyTopProducts", name = "store-report-dailyTopProducts-get")
     public ResponseEntity<HttpResponse> dailyTopProducts(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String startDate, @RequestParam(required = false, defaultValue = "") String endDate, @RequestParam(defaultValue = "date", required = false) String sortBy,
@@ -288,6 +269,38 @@ public class StoreReportsController {
 
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(lists);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+    @GetMapping(value = "/report/merchantDailyTopProducts", name = "store-report-dailyTopProducts-get")
+    public ResponseEntity<HttpResponse> merchantDailyTopProducts(HttpServletRequest request,
+                                                                 @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+                                                                 @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
+                                                                 @RequestParam(defaultValue = "date", required = false) String sortBy,
+                                                                 @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
+                                                                 @RequestParam(defaultValue = "0") int page,
+                                                                 @RequestParam(defaultValue = "20") int pageSize, @PathVariable("storeId") String storeId) throws Exception {
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        ProductDailySale productDailySale = new ProductDailySale();
+        if (storeId != null && !storeId.isEmpty()) {
+            productDailySale.setStoreId(storeId);
+        }
+
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<ProductDailySale> example = Example.of(productDailySale, matcher);
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("totalOrders").descending());
+        Page<ProductDailySale> product = productDailySalesRepository.findAll(getSpecDailySaleWithDatesBetween(startDate, endDate, example), pageable);
+
+        response.setData(product);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -383,6 +396,66 @@ public class StoreReportsController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
+
+    @GetMapping(value = "/merchant_daily_sales")
+    public ResponseEntity<HttpResponse> merchant_daily_sales(HttpServletRequest request,
+                                                    @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                                    @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                                    @RequestParam(defaultValue = "date", required = false) String sortBy,
+                                                    @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
+                                                    @RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "20") int pageSize,
+                                                    @PathVariable("storeId") String storeId) throws IOException {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logPrefix = request.getRequestURI();
+        Logger.application.info(logPrefix, "", "");
+        Logger.application.info("querystring: " + request.getQueryString(), "");
+        Logger.application.info("from: " + from.toString(), "");
+        Logger.application.info("to: " + to.toString(), "");
+
+//        Pageable pageable = null;
+//        if (sortingOrder.equalsIgnoreCase("desc")) {
+//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+//        } else {
+//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+//        }
+//        Logger.application.info("pageable: " + pageable, "");
+
+        StoreDailySale example = new StoreDailySale();
+
+        if (storeId != null && !storeId.isEmpty()) {
+            Store store = storeRepository.getOne(storeId);
+            example.setStore(store);
+        }
+
+
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<StoreDailySale> orderExample = Example.of(example, matcher);
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("date").descending());
+        Page<StoreDailySale> storeDailySale = storeDailySalesRepository.findAll(getMerchantDailySaleWithDateBetween(from, to, orderExample), pageable);
+
+//        response.setSuccessStatus(HttpStatus.OK);
+//        Logger.application.info("Storeid: " + storeId, "");
+//
+//        StoreDailySale example = new StoreDailySale();
+//        if
+//
+//        if (!storeId.equals("null")) {
+//            response.setData(storeDailySalesRepository.findAll(getMerchantDailySaleWithDateBetween(storeId, from, to, pageable));
+//        } else {
+//            response.setData(storeDailySalesRepository.findByDateBetween(from, to, pageable));
+//        }
+        response.setData(storeDailySale);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
     @GetMapping(value = "/daily_top_products")
     public ResponseEntity<HttpResponse> dailytTopProducts(HttpServletRequest request,
                                                           @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
@@ -425,6 +498,68 @@ public class StoreReportsController {
         response.setSuccessStatus(HttpStatus.OK);
         return ResponseEntity.status(response.getStatus()).body(response);
 
+    }
+
+
+
+    public Specification<Order> getSpecWithDatesBetween(
+            Date from, Date to, OrderStatus completionStatus, Example<Order> example) {
+
+        return (Specification<Order>) (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+
+            if (from != null && to != null) {
+                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
+            }
+            if (completionStatus == OrderStatus.PAID) {
+                Predicate predicateForOnlinePayment = builder.equal(root.get("paymentStatus"), "PAID");
+                Predicate predicateForCompletionStatus = builder.equal(root.get("paymentStatus"), "PAID");
+                Predicate predicateForCOD = builder.and(predicateForCompletionStatus);
+                Predicate finalPredicate = builder.or(predicateForOnlinePayment, predicateForCOD);
+                predicates.add(finalPredicate);
+            } else if (completionStatus != null) {
+                predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
+            }
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+    public Specification<ProductDailySale> getSpecDailySaleWithDatesBetween(
+            Date from, Date to, Example<ProductDailySale> example) {
+
+        return (Specification<ProductDailySale>) (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+
+            if (from != null && to != null) {
+//                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(root.get("date"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("date"), to));
+            }
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+    public Specification<StoreDailySale> getMerchantDailySaleWithDateBetween(
+            Date from, Date to, Example<StoreDailySale> example) {
+
+        return (Specification<StoreDailySale>) (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+
+            if (from != null && to != null) {
+//                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(root.get("date"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("date"), to));
+            }
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
     }
 
     public static class Statement {
