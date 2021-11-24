@@ -29,23 +29,7 @@ public class Store implements Serializable {
     private String id;
 
     private String name;
-    private String city;
-    private String address;
     private String clientId;
-    private String postcode;
-    private String state;
-    private String contactName;
-    private String phone;
-    private String phoneNumber;
-    private String email;
-    private String verticalCode;
-
-    private Double serviceChargesPercentage;
-
-    private String paymentType;
-    private Integer invoiceSeqNo;
-//    private String invoicePrefix;
-
     @JsonIgnore
     private String regionCountryId;
 
