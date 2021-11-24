@@ -3,6 +3,7 @@ package com.kalsym.report.service.model;
 import java.io.Serializable;
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -17,8 +18,8 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @Getter
 @Setter
-@Table(name = "store")
 @ToString
+@Table(name = "store")
 public class Store implements Serializable {
 
     @Id
@@ -27,18 +28,25 @@ public class Store implements Serializable {
     private String id;
 
     private String name;
-
-    private String address;
     private String city;
+    private String address;
+    private String clientId;
     private String postcode;
     private String state;
-    private String email;
+    private String contactName;
     private String phone;
+    private String phoneNumber;
+    private String email;
     private String verticalCode;
 
-    private String regionCountryId;
+    private Double serviceChargesPercentage;
 
-    private String clientId;
+    private String paymentType;
+    private Integer invoiceSeqNo;
+//    private String invoicePrefix;
+
+    @JsonIgnore
+    private String regionCountryId;
 
     public String getNameAbreviation() {
         String abbreviation = "";
@@ -59,5 +67,5 @@ public class Store implements Serializable {
         }
         return abbreviation;
     }
-
 }
+

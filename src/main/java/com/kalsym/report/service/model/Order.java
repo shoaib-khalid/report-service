@@ -5,15 +5,12 @@ import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 @Entity
 @Getter
@@ -27,7 +24,8 @@ public class Order implements Serializable {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
-    private String storeId;
+
+
     private Float subTotal;
     private Float total;
     private String completionStatus;
@@ -35,7 +33,14 @@ public class Order implements Serializable {
     private String customerNotes;
     private String privateAdminNotes;
     private String cartId;
-    private String customerId;
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "customerId", insertable = false, updatable = false)
+//    @Fetch(FetchMode.JOIN)
+//    private Customer customer;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "storeId", insertable = false, updatable = false)
+    private Store store;
     
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
