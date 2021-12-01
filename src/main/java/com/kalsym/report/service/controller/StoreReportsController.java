@@ -273,7 +273,7 @@ public class StoreReportsController {
     }
 
 
-    @GetMapping(value = "/report/merchantDailyTopProducts", name = "store-report-dailyTopProducts-get")
+    @GetMapping(value = "/report/merchantDailyTopProducts", name = "store-merchant-report-dailyTopProducts-get")
     public ResponseEntity<HttpResponse> merchantDailyTopProducts(HttpServletRequest request,
                                                                  @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                                  @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
@@ -397,7 +397,7 @@ public class StoreReportsController {
     }
 
 
-    @GetMapping(value = "/merchant_daily_sales")
+    @GetMapping(value = "/merchant_daily_sales" , name = "store-report-settlement-get")
     public ResponseEntity<HttpResponse> merchant_daily_sales(HttpServletRequest request,
                                                     @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
                                                     @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
