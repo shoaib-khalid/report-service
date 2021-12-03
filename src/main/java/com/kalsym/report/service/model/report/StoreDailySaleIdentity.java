@@ -26,6 +26,8 @@ public class StoreDailySaleIdentity implements Serializable {
         this.storeId = storeId;
     }
 
+
+
     @Override
     public int hashCode() {
         int hash = 3;
