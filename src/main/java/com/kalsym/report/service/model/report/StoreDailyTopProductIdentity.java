@@ -22,6 +22,12 @@ public class StoreDailyTopProductIdentity implements Serializable {
     private String productId;
     private String storeId;
 
+    public StoreDailyTopProductIdentity(Date date, String productId) {
+        this.date = date;
+        this.productId = productId;
+    }
+
+
     public StoreDailyTopProductIdentity(Date date, String productId, String storeId) {
         this.date = date;
         this.productId = productId;
