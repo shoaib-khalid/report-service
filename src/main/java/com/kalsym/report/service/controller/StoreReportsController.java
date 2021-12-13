@@ -1,10 +1,7 @@
 package com.kalsym.report.service.controller;
 
 import com.kalsym.report.service.ReportServiceApplication;
-import com.kalsym.report.service.model.Order;
-import com.kalsym.report.service.model.Product;
-import com.kalsym.report.service.model.Response;
-import com.kalsym.report.service.model.Store;
+import com.kalsym.report.service.model.*;
 import com.kalsym.report.service.model.report.ProductDailySale;
 import com.kalsym.report.service.model.report.StoreDailySale;
 import com.kalsym.report.service.model.report.StoreSettlement;
@@ -61,6 +58,8 @@ public class StoreReportsController {
 
     @Autowired
     StoreSettlementsRepository storeSettlementsRepository;
+
+
     @Autowired
     ReportsGenerator reportsGenerator;
     @Autowired
@@ -68,7 +67,7 @@ public class StoreReportsController {
 
     public static Specification<StoreSettlement> getStoreSettlementsSpec(
             String from, String to, Example<StoreSettlement> example) {
-        return (Specification<StoreSettlement>) (root, query, builder) -> {
+        return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
             if (from != null && to != null) {
                 predicates.add(builder.greaterThanOrEqualTo(root.get("cycleStartDate"), from));
@@ -105,16 +104,18 @@ public class StoreReportsController {
             sDate.add(Calendar.DAY_OF_MONTH, i);
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
-            System.err.println(" myFormat.format(sDate.getTime())  : " + myFormat.format(sDate.getTime()));
+//            System.err.println(" myFormat.format(sDate.getTime())  : " + myFormat.format(sDate.getTime()));
             List<Object[]> orders;
 
             if (!storeId.equals("null")) {
+//                System.err.println("START DATE : " + startDate + " END DATE : " + enDate);
                 orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatus(storeId, stDate, enDate, "PAID", sortBy, sortingOrder);
             } else {
                 orders = orderRepository.findAllByDateRangeAndPaymentStatus(stDate, enDate, OrderStatus.PAID.name(), sortBy, sortingOrder);
             }
-            System.out.println(orders);
+            System.out.println("orders.size() : " + orders.size());
             for (int k = 0; k < orders.size(); k++) {
+
                 Response.Sales sale = new Response.Sales();
                 sale.setStoreId(orders.get(k)[1].toString());
                 sale.setMerchantName(orders.get(k)[2].toString());
@@ -157,11 +158,11 @@ public class StoreReportsController {
             list.setDate(myFormat.format(sDate.getTime()));
             list.setSales(reportResponseList);
             lists.add(list);
-            if (!reportResponseList.isEmpty()) {
-                list.setDate(myFormat.format(sDate.getTime()));
-                list.setSales(reportResponseList);
-                lists.add(list);
-            }
+//            if (!reportResponseList.isEmpty()) {
+//                list.setDate(myFormat.format(sDate.getTime()));
+//                list.setSales(reportResponseList);
+//                lists.add(list);
+//            }
         }
 
 
@@ -498,21 +499,88 @@ public class StoreReportsController {
 
     }
 
-    @GetMapping(value = "/total", name = "store-product-sale-total-count-pending")
-    public ResponseEntity<HttpResponse> totalCount(HttpServletRequest request) throws IOException {
+    @GetMapping(value = "/totalSales", name = "store-total-sales-count-pending")
+    public ResponseEntity<Object> totalSalesCount(HttpServletRequest request, @PathVariable("storeId") String storeId) throws IOException {
         //TODO: not completed
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
-        String text = " NOT COMPLETED";
-        response.setMessage(text);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        DashboardViewTotal viewTotal = new DashboardViewTotal();
+
+
+        //daily sales
+        Date date = new Date();
+        Date enddate = new Date();
+        enddate.setDate(date.getDate() + 1);
+
+        List<Object[]> dailyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, "2021-12-13", "2021-12-13");
+        Set<OrderCount> todaySales = new HashSet<>();
+
+        for (int k = 0; k < dailyOrder.size(); k++) {
+
+            OrderCount dailyOrderCount = new OrderCount();
+            dailyOrderCount.setCompletionStatus(dailyOrder.get(k)[0].toString());
+            dailyOrderCount.setTotal(Integer.parseInt(dailyOrder.get(k)[1].toString()));
+            todaySales.add(dailyOrderCount);
+        }
+        //weekly sales
+
+        date.setDate(date.getDate() - 7);
+        enddate = date;
+        List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, "2021-12-06", "2021-12-12");
+        Set<OrderCount> weeklySales = new HashSet<>();
+
+        for (int k = 0; k < weeklyOrder.size(); k++) {
+
+            OrderCount weeklyOrderCount = new OrderCount();
+            weeklyOrderCount.setCompletionStatus(weeklyOrder.get(k)[0].toString());
+            weeklyOrderCount.setTotal(Integer.parseInt(weeklyOrder.get(k)[1].toString()));
+            weeklySales.add(weeklyOrderCount);
+        }
+        //monthly sales
+        date.setDate(1);
+        enddate = date;
+        List<Object[]> montlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, "2021-12-01", "2021-12-13");
+        Set<OrderCount> monthlySales = new HashSet<>();
+
+        for (int k = 0; k < montlyOrder.size(); k++) {
+
+            OrderCount montlyOrderCount = new OrderCount();
+            montlyOrderCount.setCompletionStatus(montlyOrder.get(k)[0].toString());
+            montlyOrderCount.setTotal(Integer.parseInt(montlyOrder.get(k)[1].toString()));
+            monthlySales.add(montlyOrderCount);
+
+        }
+
+        //total sales
+        List<Object[]> total = orderRepository.findAllByStoreId(storeId);
+        Set<OrderCount> totalSales = new HashSet<>();
+
+        for (int k = 0; k < total.size(); k++) {
+
+            OrderCount totalSalesCount = new OrderCount();
+            totalSalesCount.setCompletionStatus(total.get(k)[0].toString());
+            totalSalesCount.setTotal(Integer.parseInt(total.get(k)[1].toString()));
+            totalSales.add(totalSalesCount);
+
+        }
+
+        viewTotal.setDailySales(todaySales);
+        viewTotal.setWeeklySales(weeklySales);
+        viewTotal.setMonthlySales(monthlySales);
+        viewTotal.setTotalSales(totalSales);
+
+        response.setData(viewTotal);
+        response.setSuccessStatus(HttpStatus.OK);
+
+
+        return ResponseEntity.status(response.getStatus()).body(response.getData());
     }
 
 
     public Specification<Order> getSpecWithDatesBetween(
             Date from, Date to, OrderStatus completionStatus, Example<Order> example) {
 
-        return (Specification<Order>) (root, query, builder) -> {
+        return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
 
             if (from != null && to != null) {
@@ -538,7 +606,7 @@ public class StoreReportsController {
     public Specification<ProductDailySale> getSpecDailySaleWithDatesBetween(
             Date from, Date to, Example<ProductDailySale> example) {
 
-        return (Specification<ProductDailySale>) (root, query, builder) -> {
+        return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
 
             if (from != null && to != null) {
@@ -555,7 +623,7 @@ public class StoreReportsController {
     public Specification<StoreDailySale> getMerchantDailySaleWithDateBetween(
             Date from, Date to, Example<StoreDailySale> example) {
 
-        return (Specification<StoreDailySale>) (root, query, builder) -> {
+        return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
 
             if (from != null && to != null) {
