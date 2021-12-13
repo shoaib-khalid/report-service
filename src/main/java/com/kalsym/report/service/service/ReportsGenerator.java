@@ -122,8 +122,9 @@ public class ReportsGenerator {
                     Logger.application.info("TotalCommission : " + dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
                     Logger.application.info("commission: " + dailySale.getCommision());
                     Logger.application.info("totalServiceSettlement: " + dailySalesStoreSettlement.getTotalServiceFee());
-                    Logger.application.info("totalServiceSettlement: " + dailySalesStoreSettlement.getTotalServiceFee());
+                    Logger.application.info("totalDeliveryFeee: " + dailySalesStoreSettlement.getTotalDeliveryFee());
 
+                    Logger.application.info("Get From Daily Sale Table : " + dailySale.getTotalDeliveryFee());
 
                     dailySalesStoreSettlement.setTotalCommisionFee(dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
                     dailySalesStoreSettlement.setTotalStoreShare(dailySalesStoreSettlement.getTotalStoreShare() + dailySale.getAmountEarned());
@@ -131,7 +132,7 @@ public class ReportsGenerator {
                     dailySalesStoreSettlement.setTotalTransactionValue(dailySalesStoreSettlement.getTotalTransactionValue() + dailySale.getTotalAmount());
                     dailySalesStoreSettlement.setReferenceId(dailySalesStoreSettlement.getReferenceId());
                     dailySalesStoreSettlement.setTotalServiceFee(dailySalesStoreSettlement.getTotalServiceFee() + dailySale.getTotalServiceCharge());
-                    dailySalesStoreSettlement.setTotalDeliveryFee(dailySalesStoreSettlement.getTotalServiceFee() + dailySale.getTotalDeliveryFee());
+                    dailySalesStoreSettlement.setTotalDeliveryFee(dailySalesStoreSettlement.getTotalDeliveryFee() + dailySale.getTotalDeliveryFee());
                     dailySale.setSettlementReferenceId(dailySalesStoreSettlement.getReferenceId());
 
                     storeDailySalesRepository.save(dailySale);
@@ -149,6 +150,8 @@ public class ReportsGenerator {
                     dailySalesStoreSettlement.setSettlementDate(settlementDate);
                     dailySalesStoreSettlement.setTotalServiceFee(dailySale.getTotalServiceCharge());
                     dailySalesStoreSettlement.setTotalDeliveryFee(dailySale.getTotalDeliveryFee());
+
+                    Logger.application.info("Delivery fee if cannot find the row : " + dailySalesStoreSettlement.getTotalDeliveryFee());
 
                     Optional<Store> storeOpt = storeRepository.findById(storeId);
 
