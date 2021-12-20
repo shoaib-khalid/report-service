@@ -35,4 +35,6 @@ public class ProductDailySale implements Serializable {
     private String storeId;
     private String name;
 
+    Long ranking;
+
 }
