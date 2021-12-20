@@ -46,7 +46,7 @@ public class StoreSettlement implements Serializable {
     private String cycleStartDate;
     private String cycleEndDate;
 
-    private Date settlementDate;
+    private String settlementDate;
     private String referenceId;
 
 }

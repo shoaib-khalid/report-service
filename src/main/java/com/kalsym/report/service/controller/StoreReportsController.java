@@ -56,6 +56,7 @@ public class StoreReportsController {
     @Autowired
     ProductDailySalesRepository productDailySalesRepository;
 
+
     @Autowired
     StoreSettlementsRepository storeSettlementsRepository;
 
@@ -296,10 +297,10 @@ public class StoreReportsController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<ProductDailySale> example = Example.of(productDailySale, matcher);
 
-        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("date").ascending());
-        Page<ProductDailySale> product = productDailySalesRepository.findAll(getSpecDailySaleWithDatesBetween(startDate, endDate, example), pageable);
-        System.err.println(product.getContent());
-        response.setData(product);
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("date").descending());
+        Page<ProductDailySale> products = productDailySalesRepository.findAll(getSpecDailySaleWithDatesBetween(startDate, endDate, example), pageable);
+
+        response.setData(products);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -480,7 +481,7 @@ public class StoreReportsController {
         } else {
             pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
         }
-        Logger.application.info("pageable: " + pageable, "");
+        Logger.application.info("Pageable", pageable, "");
 
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(storeDailyTopProductsRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
@@ -512,42 +513,54 @@ public class StoreReportsController {
         Date enddate = new Date();
         enddate.setDate(date.getDate() + 1);
 
-        List<Object[]> dailyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, "2021-12-13", "2021-12-13");
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
+        String todayDate = simpleDateFormat.format(new Date());
+
+        String todayEndDate = simpleDateFormat.format(enddate);
+
+        List<Object[]> dailyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, todayDate, todayEndDate);
         Set<OrderCount> todaySales = new HashSet<>();
 
-        for (int k = 0; k < dailyOrder.size(); k++) {
+        for (Object[] element : dailyOrder) {
 
             OrderCount dailyOrderCount = new OrderCount();
-            dailyOrderCount.setCompletionStatus(dailyOrder.get(k)[0].toString());
-            dailyOrderCount.setTotal(Integer.parseInt(dailyOrder.get(k)[1].toString()));
+            dailyOrderCount.setCompletionStatus(element[0].toString());
+            dailyOrderCount.setTotal(Integer.parseInt(element[1].toString()));
             todaySales.add(dailyOrderCount);
         }
         //weekly sales
-
-        date.setDate(date.getDate() - 7);
-        enddate = date;
-        List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, "2021-12-06", "2021-12-12");
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+        Date firstDayOfWeek = cal.getTime();
+        Date lastDayOfWeek = cal.getTime();
+        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
+        List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek));
         Set<OrderCount> weeklySales = new HashSet<>();
 
-        for (int k = 0; k < weeklyOrder.size(); k++) {
+        for (Object[] item : weeklyOrder) {
 
             OrderCount weeklyOrderCount = new OrderCount();
-            weeklyOrderCount.setCompletionStatus(weeklyOrder.get(k)[0].toString());
-            weeklyOrderCount.setTotal(Integer.parseInt(weeklyOrder.get(k)[1].toString()));
+            weeklyOrderCount.setCompletionStatus(item[0].toString());
+            weeklyOrderCount.setTotal(Integer.parseInt(item[1].toString()));
             weeklySales.add(weeklyOrderCount);
         }
         //monthly sales
-        date.setDate(1);
-        enddate = date;
-        List<Object[]> montlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, "2021-12-01", "2021-12-13");
+
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        Date firstDayOfMonth = cal.getTime();
+        Date lastDayOfMonth = cal.getTime();
+        lastDayOfMonth.setDate(firstDayOfMonth.getDate() + cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        List<Object[]> montlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth));
         Set<OrderCount> monthlySales = new HashSet<>();
 
-        for (int k = 0; k < montlyOrder.size(); k++) {
+        for (Object[] value : montlyOrder) {
 
-            OrderCount montlyOrderCount = new OrderCount();
-            montlyOrderCount.setCompletionStatus(montlyOrder.get(k)[0].toString());
-            montlyOrderCount.setTotal(Integer.parseInt(montlyOrder.get(k)[1].toString()));
-            monthlySales.add(montlyOrderCount);
+            OrderCount monthlyOrderCount = new OrderCount();
+            monthlyOrderCount.setCompletionStatus(value[0].toString());
+            monthlyOrderCount.setTotal(Integer.parseInt(value[1].toString()));
+            monthlySales.add(monthlyOrderCount);
 
         }
 
@@ -555,11 +568,11 @@ public class StoreReportsController {
         List<Object[]> total = orderRepository.findAllByStoreId(storeId);
         Set<OrderCount> totalSales = new HashSet<>();
 
-        for (int k = 0; k < total.size(); k++) {
+        for (Object[] objects : total) {
 
             OrderCount totalSalesCount = new OrderCount();
-            totalSalesCount.setCompletionStatus(total.get(k)[0].toString());
-            totalSalesCount.setTotal(Integer.parseInt(total.get(k)[1].toString()));
+            totalSalesCount.setCompletionStatus(objects[0].toString());
+            totalSalesCount.setTotal(Integer.parseInt(objects[1].toString()));
             totalSales.add(totalSalesCount);
 
         }
@@ -636,6 +649,7 @@ public class StoreReportsController {
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
+
 
     public static class Statement {
 

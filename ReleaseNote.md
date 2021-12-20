@@ -1,4 +1,16 @@
 ##################################################
+# Version v.3.1.1 | 20-December-2021
+##################################################
+### Code Changes:
+
+1. Add Product_daily_sale table add **_Ranking_** column
+
+Update DB insertProductDailySales **procedure**
+UPDATE product_daily_sale r
+SET r.ranking =(SELECT ranking FROM (SELECT a.`date`, a.productId,a.totalOrders, a.storeId, ROW_NUMBER() OVER(PARTITION BY a.`date` ,a.storeId ORDER by a.totalOrders desc  )as ranking
+FROM symplified.product_daily_sale a ORDER by a.`date`  ,ranking ASC ) list WHERE list.productId = r.productId and list.`date` = r.`date`);
+
+##################################################
 # Version v.3.1.0 | 13-December-2021
 ##################################################
 ### Code Changes:

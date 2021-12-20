@@ -147,7 +147,7 @@ public class ReportsGenerator {
                     dailySalesStoreSettlement.setTotalStoreShare(dailySale.getAmountEarned());
                     dailySalesStoreSettlement.setTotalTransactionValue(dailySale.getTotalAmount());
                     dailySalesStoreSettlement.setSettlementStatus(status);
-                    dailySalesStoreSettlement.setSettlementDate(settlementDate);
+                    dailySalesStoreSettlement.setSettlementDate(settlementDate.toString());
                     dailySalesStoreSettlement.setTotalServiceFee(dailySale.getTotalServiceCharge());
                     dailySalesStoreSettlement.setTotalDeliveryFee(dailySale.getTotalDeliveryFee());
 
@@ -376,9 +376,9 @@ public class ReportsGenerator {
         calendar.setTime(date);
         int daysToAdd = 0;
         if (cycle == 1) {
-            daysToAdd = 6;
+            daysToAdd = 5;//6
         } else if (cycle == 2) {
-            daysToAdd = 4;
+            daysToAdd = 3;//4
         }
 
         calendar.add(Calendar.DAY_OF_YEAR, daysToAdd);
