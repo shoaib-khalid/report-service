@@ -529,15 +529,14 @@ public class StoreReportsController {
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
         Date date;
-        Date enddate = null ;
+        Date enddate = new Date();
         if (from == null) {
             //daily sales
             date = new Date();
             enddate.setDate(date.getDate() + 1);
-        }
-        else{
+        } else {
             date = from;
-            enddate.setDate(from.getDate() + 1);
+            enddate.setDate(date.getDate() + 1);
         }
 
         String pattern = "yyyy-MM-dd";
@@ -559,11 +558,14 @@ public class StoreReportsController {
         }
         //weekly sales
         Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
         cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
         Date firstDayOfWeek = cal.getTime();
         Date lastDayOfWeek = cal.getTime();
         lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
 
+        Logger.application.info("First Week : ",firstDayOfWeek , "");
+        Logger.application.info("Second Week : ", lastDayOfWeek, "");
         List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek));
         Set<OrderCount> weeklySales = new HashSet<>();
 
@@ -575,11 +577,15 @@ public class StoreReportsController {
             weeklySales.add(weeklyOrderCount);
         }
         //monthly sales
-
+        System.err.println("MONTH : " + date);
+        cal.setTime(date);
         cal.set(Calendar.DAY_OF_MONTH, 1);
         Date firstDayOfMonth = cal.getTime();
         Date lastDayOfMonth = cal.getTime();
         lastDayOfMonth.setDate(firstDayOfMonth.getDate() + cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        Logger.application.info("First Month  : ", firstDayOfMonth, "");
+        Logger.application.info("Second Month : ", lastDayOfMonth, "");
         List<Object[]> montlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth));
         Set<OrderCount> monthlySales = new HashSet<>();
 
