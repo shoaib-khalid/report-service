@@ -32,6 +32,9 @@ public class StoreDailySale implements Serializable {
     private Double totalServiceCharge;
     private Double totalAmount;
     private Double totalDeliveryFee;
+    private Double totalSelfDeliveryFee;
+    private Double totalAppliedDiscount;
+    private Double totalDeliveryDiscount;
     //    @OneToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "storeId", insertable = false, updatable = false)
 //    @Fetch(FetchMode.JOIN)

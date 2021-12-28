@@ -36,6 +36,9 @@ public class StoreSettlement implements Serializable {
     private Double totalServiceFee;
     private Double totalCommisionFee;
     private Double totalDeliveryFee;
+    private Double totalSelfDeliveryFee;
+    private Double totalAppliedDiscount;
+    private Double totalDeliveryDiscount;
     private Double totalRefund;
     private Double totalStoreShare;
 

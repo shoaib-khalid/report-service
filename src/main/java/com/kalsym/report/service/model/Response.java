@@ -49,6 +49,9 @@ public class Response {
         public String orderStatus;
         public String deliveryStatus;
         public Float commission;
+        public Float selfDeliveryCharge;
+        public Float orderDiscount;
+        public Float deliveryDiscount;
 
         public String getStoreId() { return storeId; }
 
@@ -93,6 +96,30 @@ public class Response {
         public Float getSubTotal() { return subTotal; }
 
         public void setSubTotal(Float subTotal) { this.subTotal = subTotal; }
+
+        public Float getSelfDeliveryCharge() {
+            return selfDeliveryCharge;
+        }
+
+        public void setSelfDeliveryCharge(Float selfDeliveryCharge) {
+            this.selfDeliveryCharge = selfDeliveryCharge;
+        }
+
+        public Float getOrderDiscount() {
+            return orderDiscount;
+        }
+
+        public void setOrderDiscount(Float orderDiscount) {
+            this.orderDiscount = orderDiscount;
+        }
+
+        public Float getDeliveryDiscount() {
+            return deliveryDiscount;
+        }
+
+        public void setDeliveryDiscount(Float deliveryDiscount) {
+            this.deliveryDiscount = deliveryDiscount;
+        }
     }
 
     public static class DetailedSalesReportResponse {

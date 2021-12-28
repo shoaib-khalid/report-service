@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.Optional;
 
 @Repository
-public interface StoreSettlementsRepository extends PagingAndSortingRepository<StoreSettlement, String>, JpaRepository<StoreSettlement, String>, JpaSpecificationExecutor<StoreSettlement> {
+public interface  StoreSettlementsRepository extends PagingAndSortingRepository<StoreSettlement, String>, JpaRepository<StoreSettlement, String>, JpaSpecificationExecutor<StoreSettlement> {
 
     //    /**
 //     *

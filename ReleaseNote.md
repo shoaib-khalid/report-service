@@ -1,3 +1,66 @@
+
+##################################################
+# Version v.3.2.0| 28-December-2021
+##################################################
+### Code Changes:
+
+1. Self Delivery Fee, Delivery Discount an Applied Discount added to the Daily sale and settlement.
+
+   ALTER TABLE symplified.store_daily_sale ADD totalAppliedDiscount decimal(15,2) NULL;
+   ALTER TABLE symplified.store_daily_sale ADD totalDeliveryDiscount decimal(15,2) NULL;
+   ALTER TABLE symplified.store_daily_sale ADD totalSelfDelivery decimal(15,2) NULL;
+
+
+   ALTER TABLE symplified.store_settlement ADD totalSelfDelivery decimal(15,2) NULL;
+   ALTER TABLE symplified.store_settlement ADD totalAppliedDiscount decimal(15,2) NULL;
+   ALTER TABLE symplified.store_settlement ADD totalDeliveryDiscount decimal(10,2) NULL;
+
+2. Update Store Procedures for *insertDailySale*
+
+"   CREATE DEFINER=`root`@`localhost` PROCEDURE `symplified`.`insertDailySales`()
+   BEGIN
+
+   DECLARE deliveryTypes varchar(50) ;
+   DECLARE i int ;
+   DECLARE totalType int ;
+   DECLARE endDate timestamp;
+
+
+
+   INSERT INTO store_daily_sale(`date`, storeId, totalOrders, 
+   amountEarned, commision,totalServiceCharge,
+   totalAmount,totalAppliedDiscount, totalDeliveryDiscount) 
+   SELECT DATE(o.created), o.storeId, COUNT(o.created), IFNULL(SUM(o.storeShare), 0) , 
+   IFNULL(SUM(o.klCommission), 0),IFNULL(SUM(o.storeServiceCharges),0) ,  IFNULL(SUM(o.total),0), 
+   IFNULL(SUM(o.appliedDiscount),0),IFNULL(SUM(o.deliveryDiscount),0)
+   FROM symplified.`order` o INNER JOIN symplified.order_payment_detail opd ON opd.orderId=o.id
+   WHERE 
+   `created` IS NOT NULL
+   AND storeId IS NOT NULL 
+   #AND DATE(created)=DATE(NOW()) 
+   AND  1<=(SELECT COUNT(*) FROM order_payment_status_update opsu WHERE opsu.status='PAID' AND opsu.orderId=o.id)
+   GROUP BY DATE(created), storeId
+   ORDER BY DATE(created)
+   ON DUPLICATE KEY UPDATE
+   storeId=storeId;	
+
+   UPDATE symplified.store_daily_sale sds
+   SET sds.totalSelfDeliveryFee =(SELECT IFNULL(SUM(o.deliveryCharges),0) 		
+   FROM symplified.`order` o  WHERE 
+   o.deliveryType ="SELF" AND
+   `created` > CONCAT(sds.`date`, ' 00:00:00') AND created < CONCAT(sds.`date`, ' 23:59:59')  
+   AND storeId = sds.storeId AND o.paymentStatus = "PAID"), 
+   
+   sds.totalDeliveryFee =(SELECT IFNULL(SUM(o.deliveryCharges),0) 		
+   FROM symplified.`order` o  WHERE 
+   o.deliveryType != "SELF" AND
+   `created` > CONCAT(sds.`date`, ' 00:00:00') AND created < CONCAT(sds.`date`, ' 23:59:59')  
+   AND storeId = sds.storeId AND o.paymentStatus = "PAID");
+
+   END "
+
+
+
 ##################################################
 # Version v.3.1.1 | 20-December-2021
 ##################################################

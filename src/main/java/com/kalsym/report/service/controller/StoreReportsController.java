@@ -152,6 +152,20 @@ public class StoreReportsController {
                     String emptyValue = "0.0";
                     sale.setSubTotal(Float.parseFloat(emptyValue));
                 }
+                if (orders.get(k)[14] != null) {
+                    String orderDiscount = orders.get(k)[14].toString();
+                    sale.setOrderDiscount(Float.parseFloat(orderDiscount));
+                } else {
+                    String emptyValue = "0.0";
+                    sale.setOrderDiscount(Float.parseFloat(emptyValue));
+                }
+                if (orders.get(k)[15] != null) {
+                    String deliveryDiscount = orders.get(k)[15].toString();
+                    sale.setDeliveryDiscount(Float.parseFloat(deliveryDiscount));
+                } else {
+                    String emptyValue = "0.0";
+                    sale.setDeliveryDiscount(Float.parseFloat(emptyValue));
+                }
                 sale.setOrderStatus(orders.get(k)[11].toString());
                 sale.setDeliveryStatus(orders.get(k)[12].toString());
                 reportResponseList.add(sale);
