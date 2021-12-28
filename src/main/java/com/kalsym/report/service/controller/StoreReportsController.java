@@ -311,7 +311,13 @@ public class StoreReportsController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<ProductDailySale> example = Example.of(productDailySale, matcher);
 
-        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("date").descending());
+//        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        Pageable pageable = null;
+        if (sortingOrder.equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending().and(Sort.by("ranking").ascending()));
+        } else {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending().and(Sort.by("ranking").ascending()));
+        }
         Page<ProductDailySale> products = productDailySalesRepository.findAll(getSpecDailySaleWithDatesBetween(startDate, endDate, example), pageable);
 
         response.setData(products);
@@ -515,22 +521,29 @@ public class StoreReportsController {
     }
 
     @GetMapping(value = "/totalSales", name = "store-total-sales-count-pending")
-    public ResponseEntity<Object> totalSalesCount(HttpServletRequest request, @PathVariable("storeId") String storeId) throws IOException {
+    public ResponseEntity<Object> totalSalesCount(HttpServletRequest request, @PathVariable("storeId") String storeId,
+                                                  @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                                  @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to) throws IOException {
         //TODO: not completed
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
-
-
-        //daily sales
-        Date date = new Date();
-        Date enddate = new Date();
-        enddate.setDate(date.getDate() + 1);
+        Date date;
+        Date enddate = null ;
+        if (from == null) {
+            //daily sales
+            date = new Date();
+            enddate.setDate(date.getDate() + 1);
+        }
+        else{
+            date = from;
+            enddate.setDate(from.getDate() + 1);
+        }
 
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
 
-        String todayDate = simpleDateFormat.format(new Date());
+        String todayDate = simpleDateFormat.format(date);
 
         String todayEndDate = simpleDateFormat.format(enddate);
 
@@ -550,6 +563,7 @@ public class StoreReportsController {
         Date firstDayOfWeek = cal.getTime();
         Date lastDayOfWeek = cal.getTime();
         lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
+
         List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek));
         Set<OrderCount> weeklySales = new HashSet<>();
 
