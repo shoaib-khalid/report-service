@@ -1,4 +1,12 @@
 ##################################################
+# Version v.3.2.3| 29-December-2021
+##################################################
+### Code Changes:
+1. TotalSales count api bug fixed - removed date
+2. Added new endpoint for dashboard - weekly sale by FE date range
+
+
+##################################################
 # Version v.3.2.2| 28-December-2021
 ##################################################
 ### Code Changes:
