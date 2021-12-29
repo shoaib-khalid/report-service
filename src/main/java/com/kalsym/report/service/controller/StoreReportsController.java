@@ -528,16 +528,10 @@ public class StoreReportsController {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
-        Date date;
+        Date date = new Date();
         Date enddate = new Date();
-        if (from == null) {
-            //daily sales
-            date = new Date();
-            enddate.setDate(date.getDate() + 1);
-        } else {
-            date = from;
-            enddate.setDate(date.getDate() + 1);
-        }
+        //daily sales
+        enddate.setDate(date.getDate() + 1);
 
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
@@ -558,14 +552,14 @@ public class StoreReportsController {
         }
         //weekly sales
         Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
+        cal.add(Calendar.DATE, -7);
         cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
         Date firstDayOfWeek = cal.getTime();
         Date lastDayOfWeek = cal.getTime();
+        firstDayOfWeek.setDate(firstDayOfWeek.getDate());
         lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
+        Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
 
-        Logger.application.info("First Week : ",firstDayOfWeek , "");
-        Logger.application.info("Second Week : ", lastDayOfWeek, "");
         List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek));
         Set<OrderCount> weeklySales = new HashSet<>();
 
@@ -577,15 +571,13 @@ public class StoreReportsController {
             weeklySales.add(weeklyOrderCount);
         }
         //monthly sales
-        System.err.println("MONTH : " + date);
-        cal.setTime(date);
         cal.set(Calendar.DAY_OF_MONTH, 1);
         Date firstDayOfMonth = cal.getTime();
         Date lastDayOfMonth = cal.getTime();
         lastDayOfMonth.setDate(firstDayOfMonth.getDate() + cal.getActualMaximum(Calendar.DAY_OF_MONTH));
 
-        Logger.application.info("First Month  : ", firstDayOfMonth, "");
-        Logger.application.info("Second Month : ", lastDayOfMonth, "");
+        Logger.application.info("First Month  : " + firstDayOfMonth);
+        Logger.application.info("Second Month : " + lastDayOfMonth);
         List<Object[]> montlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth));
         Set<OrderCount> monthlySales = new HashSet<>();
 
@@ -622,6 +614,47 @@ public class StoreReportsController {
 
         return ResponseEntity.status(response.getStatus()).body(response.getData());
     }
+    @GetMapping(value = "/weeklySale", name = "store-weekly-sales-count")
+    public ResponseEntity<Object> weeklySale(HttpServletRequest request, @PathVariable("storeId") String storeId,
+                                                  @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                                  @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to) throws IOException {
+        //TODO: not completed
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logPrefix = request.getRequestURI();
+        DashboardViewTotal viewTotal = new DashboardViewTotal();
+//
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        //weekly sales
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -7);
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+        Date firstDayOfWeek = from;
+        Date lastDayOfWeek = to;
+//        firstDayOfWeek.setDate(firstDayOfWeek.getDate());
+//        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
+        Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
+
+        List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek));
+        Set<OrderCount> weeklySales = new HashSet<>();
+
+        for (Object[] item : weeklyOrder) {
+
+            OrderCount weeklyOrderCount = new OrderCount();
+            weeklyOrderCount.setCompletionStatus(item[0].toString());
+            weeklyOrderCount.setTotal(Integer.parseInt(item[1].toString()));
+            weeklySales.add(weeklyOrderCount);
+        }
+
+        viewTotal.setWeeklySales(weeklySales);
+
+        response.setData(viewTotal);
+        response.setSuccessStatus(HttpStatus.OK);
+
+
+        return ResponseEntity.status(response.getStatus()).body(response.getData());
+    }
+
 
 
     public Specification<Order> getSpecWithDatesBetween(
