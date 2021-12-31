@@ -35,10 +35,10 @@
 
    ALTER TABLE symplified.store_daily_sale ADD totalAppliedDiscount decimal(15,2) NULL;
    ALTER TABLE symplified.store_daily_sale ADD totalDeliveryDiscount decimal(15,2) NULL;
-   ALTER TABLE symplified.store_daily_sale ADD totalSelfDelivery decimal(15,2) NULL;
+   ALTER TABLE symplified.store_daily_sale ADD totalSelfDeliveryFee decimal(15,2) NULL;
 
 
-   ALTER TABLE symplified.store_settlement ADD totalSelfDelivery decimal(15,2) NULL;
+   ALTER TABLE symplified.store_settlement ADD totalSelfDeliveryFee decimal(15,2) NULL;
    ALTER TABLE symplified.store_settlement ADD totalAppliedDiscount decimal(15,2) NULL;
    ALTER TABLE symplified.store_settlement ADD totalDeliveryDiscount decimal(10,2) NULL;
 
