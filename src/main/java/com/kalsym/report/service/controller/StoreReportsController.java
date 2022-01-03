@@ -211,7 +211,7 @@ public class StoreReportsController {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Order orderMatch = new Order();
-        if (storeId != null && !storeId.isEmpty()) {
+        if (!storeId.contains("null")) {
             Store store = storeRepository.getOne(storeId);
             orderMatch.setStore(store);
         }
