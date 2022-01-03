@@ -27,6 +27,12 @@ public class Order implements Serializable {
     private String id;
 
 
+    private Float klCommission;
+    private Float deliveryCharges;
+    private Float storeServiceCharges;
+    private Float appliedDiscount;
+    private Float deliveryDiscount;
+
 
     private Float subTotal;
     private Float total;

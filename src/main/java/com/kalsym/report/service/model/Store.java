@@ -31,7 +31,7 @@ public class Store implements Serializable {
     private String name;
     private String clientId;
     @JsonIgnore
-    private String regionCountryId;
+    private String regionCountryStateId;
 
     public String getNameAbreviation() {
         String abbreviation = "";

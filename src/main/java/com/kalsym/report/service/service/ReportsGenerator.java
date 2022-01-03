@@ -175,7 +175,7 @@ public class ReportsGenerator {
                         Store settlementStore = storeOpt.get();
                         dailySalesStoreSettlement.setStoreId(storeId);
                         settlementStoreNameAbbreviation = settlementStore.getNameAbreviation();
-                        settlementStoreCountryId = settlementStore.getRegionCountryId();
+                        settlementStoreCountryId = settlementStore.getRegionCountryStateId();
                         dailySalesStoreSettlement.setStoreName(settlementStore.getName());
                         dailySalesStoreSettlement.setClientId(settlementStore.getClientId());
                         dailySalesStoreSettlement.setCycle(dailySaleCycle + "");
