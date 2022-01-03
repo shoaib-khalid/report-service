@@ -36,6 +36,7 @@ public class Order implements Serializable {
 
     private Float subTotal;
     private Float total;
+    private Float storeShare;
     private String completionStatus;
     private String paymentStatus;
     private String customerNotes;
