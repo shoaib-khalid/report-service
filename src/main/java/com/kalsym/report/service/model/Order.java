@@ -42,6 +42,7 @@ public class Order implements Serializable {
     private String customerNotes;
     private String privateAdminNotes;
     private String cartId;
+    private String deliveryType;
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customerId" )
     @NotFound(action = NotFoundAction.IGNORE)
