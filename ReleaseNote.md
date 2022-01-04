@@ -1,4 +1,10 @@
 ##################################################
+# Version v.3.2.7| 04-January-2022
+##################################################
+### Code Changes:
+1. Merchant-Detail-Daily-Sale - added fields in the response - store share value - bug fixed
+
+##################################################
 # Version v.3.2.6| 03-January-2022
 ##################################################
 ### Code Changes:
