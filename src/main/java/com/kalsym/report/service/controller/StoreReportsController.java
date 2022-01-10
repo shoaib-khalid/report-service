@@ -552,13 +552,15 @@ public class StoreReportsController {
         }
         //weekly sales
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -7);
-        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek() + 1);
         Date firstDayOfWeek = cal.getTime();
         Date lastDayOfWeek = cal.getTime();
         firstDayOfWeek.setDate(firstDayOfWeek.getDate());
         lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
         Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
+        Logger.application.info("First week  : " + simpleDateFormat.format(firstDayOfWeek));
+        Logger.application.info("last week  : " + simpleDateFormat.format(lastDayOfWeek));
+
 
         List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek));
         Set<OrderCount> weeklySales = new HashSet<>();
@@ -590,23 +592,42 @@ public class StoreReportsController {
 
         }
 
-        //total sales
-        List<Object[]> total = orderRepository.findAllByStoreId(storeId);
-        Set<OrderCount> totalSales = new HashSet<>();
+        cal.set(Calendar.DAY_OF_YEAR, 1);
+        Date firstDayOfYear = cal.getTime();
+        Date lastDayOfYear = cal.getTime();
+//        lastDayOfYear.setDate(new Date().getTime());
 
-        for (Object[] objects : total) {
+        Logger.application.info("First Month  : " + firstDayOfMonth);
+        Logger.application.info("Second Month : " + lastDayOfMonth);
+        List<Object[]> yearlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(firstDayOfYear), todayEndDate);
+        Set<OrderCount> yearlyOrders = new HashSet<>();
 
-            OrderCount totalSalesCount = new OrderCount();
-            totalSalesCount.setCompletionStatus(objects[0].toString());
-            totalSalesCount.setTotal(Integer.parseInt(objects[1].toString()));
-            totalSales.add(totalSalesCount);
+        for (Object[] value : yearlyOrder) {
+
+            OrderCount yearlyOrderCount = new OrderCount();
+            yearlyOrderCount.setCompletionStatus(value[0].toString());
+            yearlyOrderCount.setTotal(Integer.parseInt(value[1].toString()));
+            yearlyOrders.add(yearlyOrderCount);
 
         }
+
+        //total sales
+//        List<Object[]> total = orderRepository.findAllByStoreId(storeId);
+//        Set<OrderCount> totalSales = new HashSet<>();
+//
+//        for (Object[] objects : total) {
+//
+//            OrderCount totalSalesCount = new OrderCount();
+//            totalSalesCount.setCompletionStatus(objects[0].toString());
+//            totalSalesCount.setTotal(Integer.parseInt(objects[1].toString()));
+//            totalSales.add(totalSalesCount);
+//
+//        }
 
         viewTotal.setDailySales(todaySales);
         viewTotal.setWeeklySales(weeklySales);
         viewTotal.setMonthlySales(monthlySales);
-        viewTotal.setTotalSales(totalSales);
+        viewTotal.setTotalSales(yearlyOrders);
 
         response.setData(viewTotal);
         response.setSuccessStatus(HttpStatus.OK);
@@ -614,10 +635,11 @@ public class StoreReportsController {
 
         return ResponseEntity.status(response.getStatus()).body(response.getData());
     }
+
     @GetMapping(value = "/weeklySale", name = "store-weekly-sales-count")
     public ResponseEntity<Object> weeklySale(HttpServletRequest request, @PathVariable("storeId") String storeId,
-                                                  @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-                                                  @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to) throws IOException {
+                                             @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                             @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to) throws IOException {
         //TODO: not completed
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
@@ -654,7 +676,6 @@ public class StoreReportsController {
 
         return ResponseEntity.status(response.getStatus()).body(response.getData());
     }
-
 
 
     public Specification<Order> getSpecWithDatesBetween(
