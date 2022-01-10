@@ -132,7 +132,7 @@ public class ReportsGenerator {
                     Logger.application.info("Get From Daily Sale Table : " + dailySale.getTotalDeliveryFee());
 
                     dailySalesStoreSettlement.setTotalCommisionFee(dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
-                    dailySalesStoreSettlement.setTotalStoreShare(dailySalesStoreSettlement.getTotalStoreShare() + dailySale.getAmountEarned() + dailySale.getTotalSelfDeliveryFee());
+                    dailySalesStoreSettlement.setTotalStoreShare(dailySalesStoreSettlement.getTotalStoreShare() + dailySale.getAmountEarned());
                     dailySalesStoreSettlement.setSettlementStatus(status);
                     dailySalesStoreSettlement.setTotalTransactionValue(dailySalesStoreSettlement.getTotalTransactionValue() + dailySale.getTotalAmount());
                     dailySalesStoreSettlement.setReferenceId(dailySalesStoreSettlement.getReferenceId());
@@ -153,7 +153,7 @@ public class ReportsGenerator {
                     StoreSettlement dailySalesStoreSettlement = new StoreSettlement();
 
                     dailySalesStoreSettlement.setTotalCommisionFee(dailySale.getCommision());
-                    dailySalesStoreSettlement.setTotalStoreShare(dailySale.getAmountEarned() + dailySale.getTotalSelfDeliveryFee());
+                    dailySalesStoreSettlement.setTotalStoreShare(dailySale.getAmountEarned());
                     dailySalesStoreSettlement.setTotalTransactionValue(dailySale.getTotalAmount());
                     dailySalesStoreSettlement.setSettlementStatus(status);
                     dailySalesStoreSettlement.setSettlementDate(settlement);
