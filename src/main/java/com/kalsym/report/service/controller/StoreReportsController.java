@@ -27,6 +27,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "store/{storeId}")
@@ -611,18 +612,6 @@ public class StoreReportsController {
 
         }
 
-        //total sales
-//        List<Object[]> total = orderRepository.findAllByStoreId(storeId);
-//        Set<OrderCount> totalSales = new HashSet<>();
-//
-//        for (Object[] objects : total) {
-//
-//            OrderCount totalSalesCount = new OrderCount();
-//            totalSalesCount.setCompletionStatus(objects[0].toString());
-//            totalSalesCount.setTotal(Integer.parseInt(objects[1].toString()));
-//            totalSales.add(totalSalesCount);
-//
-//        }
 
         viewTotal.setDailySales(todaySales);
         viewTotal.setWeeklySales(weeklySales);
@@ -657,7 +646,7 @@ public class StoreReportsController {
 //        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
         Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
 
-        List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek));
+        List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(from), simpleDateFormat.format(to));
         Set<OrderCount> weeklySales = new HashSet<>();
 
         for (Object[] item : weeklyOrder) {
@@ -670,6 +659,63 @@ public class StoreReportsController {
 
         viewTotal.setWeeklySales(weeklySales);
 
+        response.setData(viewTotal);
+        response.setSuccessStatus(HttpStatus.OK);
+
+
+        return ResponseEntity.status(response.getStatus()).body(response.getData());
+    }
+
+    @GetMapping(value = "/weeklyGraph", name = "store-weekly-sales-count")
+    public ResponseEntity<Object> weeklyGraph(HttpServletRequest request, @PathVariable("storeId") String storeId,
+                                              @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                              @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                              @RequestParam(defaultValue = "created", required = false) String sortBy,
+                                              @RequestParam(defaultValue = "ASC", required = false) String sortingOrder) throws IOException {
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logPrefix = request.getRequestURI();
+        DashboardViewTotal viewTotal = new DashboardViewTotal();
+//
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        //weekly sales
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -7);
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+        Date firstDayOfWeek = from;
+        Date lastDayOfWeek = to;
+//        firstDayOfWeek.setDate(firstDayOfWeek.getDate());
+//        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
+        Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
+
+        List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRangeAndGroup(storeId, simpleDateFormat.format(from), simpleDateFormat.format(to));
+//        List<OrderCount> weeklySales = new HashSet<>();
+        List<OrderCount> weeklySales = new ArrayList<>();
+
+
+        for (Object[] item : weeklyOrder) {
+
+            OrderCount weeklyOrderCount = new OrderCount();
+            weeklyOrderCount.setCompletionStatus(item[0].toString());
+            weeklyOrderCount.setTotal(Integer.parseInt(item[1].toString()));
+            weeklyOrderCount.setDate(item[2].toString());
+            weeklySales.add(weeklyOrderCount);
+        }
+
+//
+//        weeklySales.stream()
+//                .sorted(Comparator.comparing(OrderCount::getDate)) //comparator - how you want to sort it
+//                .collect(Collectors.toList());
+//        Collections.reverse(weeklySales);
+
+        Collections.sort(weeklySales, new Comparator<OrderCount>() {
+            public int compare(OrderCount o1, OrderCount o2) {
+                return o1.getDate().compareTo(o2.getDate());
+            }
+        });
+//        Collections.reverse(weeklySales);
+
+        viewTotal.setDashboardGraph(weeklySales);
         response.setData(viewTotal);
         response.setSuccessStatus(HttpStatus.OK);
 

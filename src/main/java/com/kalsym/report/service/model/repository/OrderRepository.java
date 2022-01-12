@@ -1,7 +1,6 @@
 package com.kalsym.report.service.model.repository;
 
 import com.kalsym.report.service.model.Order;
-import com.kalsym.report.service.model.OrderCount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -9,7 +8,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -35,11 +33,16 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     List<Object[]> findAllByDateRangeAndPaymentStatus(@Param("startDate") String startDate, @Param("endDate") String endDate, @Param("status") String status, @Param("sort") String sort, @Param("value") String value);
 
     @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalsales " +
-            "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId GROUP BY o.completionStatus" , nativeQuery = true)
+            "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId GROUP BY o.completionStatus", nativeQuery = true)
     List<Object[]> fineAllByStatusAndDateRange(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
 
 
+    @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalsales , DATE(created) " +
+            "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId GROUP BY o.completionStatus, DATE(created) ORDER BY  DATE(created) ASC", nativeQuery = true)
+    List<Object[]> fineAllByStatusAndDateRangeAndGroup(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
+
+
     @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalsales " +
-            "FROM symplified.`order` o WHERE o.storeId = :storeId GROUP BY o.completionStatus" , nativeQuery = true)
+            "FROM symplified.`order` o WHERE o.storeId = :storeId GROUP BY o.completionStatus", nativeQuery = true)
     List<Object[]> findAllByStoreId(@Param("storeId") String storeId);
 }
