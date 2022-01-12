@@ -13,9 +13,14 @@ import java.util.Set;
 public class DashboardViewTotal {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<OrderCount> dailySales;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<OrderCount> weeklySales;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<OrderCount> monthlySales;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<OrderCount> totalSales;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<OrderCount> dashboardGraph;
+
+
 }
