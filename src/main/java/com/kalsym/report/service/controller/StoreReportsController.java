@@ -574,10 +574,12 @@ public class StoreReportsController {
             weeklySales.add(weeklyOrderCount);
         }
         //monthly sales
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        Date firstDayOfMonth = cal.getTime();
-        Date lastDayOfMonth = cal.getTime();
-        lastDayOfMonth.setDate(firstDayOfMonth.getDate() + cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        Calendar c = Calendar.getInstance();   // this takes current date
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        Date firstDayOfMonth = c.getTime();
+        Date lastDayOfMonth = c.getTime();
+        lastDayOfMonth.setDate(firstDayOfMonth.getDate() + c.getActualMaximum(Calendar.DAY_OF_MONTH));
 
         Logger.application.info("First Month  : " + firstDayOfMonth);
         Logger.application.info("Second Month : " + lastDayOfMonth);
@@ -595,8 +597,6 @@ public class StoreReportsController {
 
         cal.set(Calendar.DAY_OF_YEAR, 1);
         Date firstDayOfYear = cal.getTime();
-        Date lastDayOfYear = cal.getTime();
-//        lastDayOfYear.setDate(new Date().getTime());
 
         Logger.application.info("First Month  : " + firstDayOfMonth);
         Logger.application.info("Second Month : " + lastDayOfMonth);
