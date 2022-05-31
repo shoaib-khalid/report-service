@@ -19,7 +19,7 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     List<Order> findAllByStoreIdAndCreatedAfterAndCreatedBefore(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
 
     @Query(value = "SELECT o.id, o.storeId, c.name AS clientName, c.username, s.name AS storeName, o.total, o.created, osd.receiverName AS customerName, o.klCommission, o.deliveryCharges," +
-            "o.storeServiceCharges, o.paymentStatus, o.completionStatus, o.subTotal ,o.appliedDiscount , o.deliveryDiscount FROM symplified.`order` o INNER JOIN symplified.store s INNER JOIN symplified.client c " +
+            "o.storeServiceCharges, o.paymentStatus, o.completionStatus, o.subTotal ,o.appliedDiscount , o.deliveryDiscount , o.storeVoucherDiscount FROM symplified.`order` o INNER JOIN symplified.store s INNER JOIN symplified.client c " +
             "INNER JOIN symplified.order_shipment_detail osd ON o.storeId = s.id AND s.clientId = c.id AND o.id = osd.orderId" +
             " WHERE (:storeId is null or o.storeId = :storeId) AND  o.created > :startDate AND o.created < :endDate AND o.paymentStatus = :status ORDER BY :sort :value", nativeQuery = true)
     List<Object[]> findAllByStoreIdAndDateRangeAndPaymentStatus(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("status") String status, @Param("sort") String sort, @Param("value") String value);

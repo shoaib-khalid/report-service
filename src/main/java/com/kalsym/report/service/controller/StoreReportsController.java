@@ -169,6 +169,7 @@ public class StoreReportsController {
                 }
                 sale.setOrderStatus(orders.get(k)[11].toString());
                 sale.setDeliveryStatus(orders.get(k)[12].toString());
+                sale.setStoreVoucherDiscount(Float.parseFloat(orders.get(k)[13].toString()));
                 reportResponseList.add(sale);
             }
             list.setDate(myFormat.format(sDate.getTime()));
