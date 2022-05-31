@@ -52,6 +52,7 @@ public class Response {
         public Float selfDeliveryCharge;
         public Float orderDiscount;
         public Float deliveryDiscount;
+        public Float storeVoucherDiscount;
 
         public String getStoreId() { return storeId; }
 
@@ -119,6 +120,14 @@ public class Response {
 
         public void setDeliveryDiscount(Float deliveryDiscount) {
             this.deliveryDiscount = deliveryDiscount;
+        }
+
+        public Float getStoreVoucherDiscount() {
+            return storeVoucherDiscount;
+        }
+
+        public void setStoreVoucherDiscount(Float storeVoucherDiscount) {
+            this.storeVoucherDiscount = storeVoucherDiscount;
         }
     }
 
