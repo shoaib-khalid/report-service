@@ -167,9 +167,15 @@ public class StoreReportsController {
                     String emptyValue = "0.0";
                     sale.setDeliveryDiscount(Float.parseFloat(emptyValue));
                 }
+                if (orders.get(k)[16] != null) {
+                    String storeVoucherDiscount = orders.get(k)[16].toString();
+                    sale.setStoreVoucherDiscount(Float.parseFloat(storeVoucherDiscount));
+                } else {
+                    String emptyValue = "0.0";
+                    sale.setStoreVoucherDiscount(Float.parseFloat(emptyValue));
+                }
                 sale.setOrderStatus(orders.get(k)[11].toString());
                 sale.setDeliveryStatus(orders.get(k)[12].toString());
-                sale.setStoreVoucherDiscount(Float.parseFloat(orders.get(k)[13].toString()));
                 reportResponseList.add(sale);
             }
             list.setDate(myFormat.format(sDate.getTime()));
