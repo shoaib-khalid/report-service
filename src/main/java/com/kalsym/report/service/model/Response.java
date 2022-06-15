@@ -53,6 +53,8 @@ public class Response {
         public Float orderDiscount;
         public Float deliveryDiscount;
         public Float storeVoucherDiscount;
+        public Float platformDiscount;
+        public String voucherType;
 
         public String getStoreId() { return storeId; }
 
@@ -129,6 +131,24 @@ public class Response {
         public void setStoreVoucherDiscount(Float storeVoucherDiscount) {
             this.storeVoucherDiscount = storeVoucherDiscount;
         }
+
+        public Float getPlatformDiscount() {
+            return platformDiscount;
+        }
+
+        public String getVoucherType() {
+            return voucherType;
+        }
+
+        public void setPlatformDiscount(Float platformDiscount) {
+            this.platformDiscount = platformDiscount;
+        }
+
+        public void setVoucherType(String voucherType) {
+            this.voucherType = voucherType;
+        }
+        
+        
     }
 
     public static class DetailedSalesReportResponse {
