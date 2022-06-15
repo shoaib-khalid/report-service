@@ -55,7 +55,7 @@ public class StoreProductReportsController {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         Logger.application.info(logPrefix, "", "");
-        Logger.application.info("querystring: " + request.getQueryString(), "");
+        Logger.application.info("queryString: " + request.getQueryString(), "");
         Logger.application.info("from: " + from.toString(), "");
         Logger.application.info("to: " + to.toString(), "");
         Logger.application.info("storeId: " + storeId, "");

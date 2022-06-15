@@ -53,6 +53,11 @@ public class Order implements Serializable {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Store store;
 
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "voucherId", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Voucher voucher;
+
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date created;
