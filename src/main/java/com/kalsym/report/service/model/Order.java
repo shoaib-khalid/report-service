@@ -48,6 +48,9 @@ public class Order implements Serializable {
     @NotFound(action = NotFoundAction.IGNORE)
     private Customer customer;
 
+    private String orderGroupId;
+
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "storeId", insertable = false, updatable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

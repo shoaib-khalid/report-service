@@ -27,7 +27,8 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
 
     @Query(value = "SELECT o.id, o.storeId, c.name AS clientName, c.username, s.name AS storeName, o.total, o.created," +
             " osd.receiverName AS customerName, o.klCommission, o.deliveryCharges, o.storeServiceCharges, o.paymentStatus," +
-            " o.completionStatus, o.subTotal ,  o.appliedDiscount , o.deliveryDiscount  , o.storeVoucherDiscount , o.voucherDiscount,  v.voucherType  FROM symplified.`order` o  LEFT JOIN symplified.voucher v ON o.voucherId = v.id" +
+            " o.completionStatus, o.subTotal ,  o.appliedDiscount , o.deliveryDiscount  , o.storeVoucherDiscount , v.voucherCode " +
+            " FROM symplified.`order` o  LEFT JOIN symplified.voucher v ON o.storeVoucherId = v.id" +
             " INNER JOIN symplified.store s INNER JOIN symplified.client c" +
             " INNER JOIN symplified.order_shipment_detail osd ON o.storeId = s.id AND s.clientId = c.id AND o.id = osd.orderId" +
             " WHERE   o.created > :startDate AND o.created < :endDate AND o.paymentStatus = :status ORDER BY :sort :value", nativeQuery = true)
