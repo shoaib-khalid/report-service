@@ -1,6 +1,7 @@
 package com.kalsym.report.service.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -48,6 +49,7 @@ public class OrderGroup implements Serializable {
     @Column(nullable = true)
     private Double platformVoucherDiscount;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "platformVoucherId", insertable = false, updatable = false)
