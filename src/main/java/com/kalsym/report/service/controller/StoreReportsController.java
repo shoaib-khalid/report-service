@@ -179,8 +179,8 @@ public class StoreReportsController {
                     String emptyValue = "0.0";
                     sale.setStoreVoucherDiscount(Float.parseFloat(emptyValue));
                 }
-                if (orders.get(k)[18] != null) {
-                    String voucherCode = orders.get(k)[18].toString();
+                if (orders.get(k)[17] != null) {
+                    String voucherCode = orders.get(k)[17].toString();
                     sale.setVoucherCode(voucherCode);
                 } else {
                     String emptyValue = "";
