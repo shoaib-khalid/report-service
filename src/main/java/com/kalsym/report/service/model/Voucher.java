@@ -41,5 +41,8 @@ public class Voucher implements Serializable {
     @Enumerated(EnumType.STRING)
     private DiscountCalculationType calculationType;
 
+    private String voucherCode;
+
+
 }
 
