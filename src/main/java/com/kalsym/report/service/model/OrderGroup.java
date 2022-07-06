@@ -49,7 +49,6 @@ public class OrderGroup implements Serializable {
     @Column(nullable = true)
     private Double platformVoucherDiscount;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "platformVoucherId", insertable = false, updatable = false)
