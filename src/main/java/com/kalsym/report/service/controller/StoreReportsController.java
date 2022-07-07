@@ -827,6 +827,7 @@ public class StoreReportsController {
                 predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
             }
             predicates.add(builder.isNotNull(root.get("voucher")));
+            predicates.add(builder.equal(root.get("paymentStatus"),"PAID"));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
