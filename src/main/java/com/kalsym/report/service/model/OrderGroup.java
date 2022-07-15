@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.List;
 
 /**
- *
  * @author 7cu
  */
 @Entity
@@ -76,4 +75,5 @@ public class OrderGroup implements Serializable {
     private String regionCountryId;
 
     private String paymentStatus;
+    private Double serviceCharges;
 }
