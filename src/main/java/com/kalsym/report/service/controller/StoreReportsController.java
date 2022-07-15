@@ -95,6 +95,7 @@ public class StoreReportsController {
 
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat finalDate = new SimpleDateFormat("dd-MM-yyyy");
 
         long diffInMillis = endDate.getTime() - startDate.getTime();
         long diff = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
@@ -737,6 +738,42 @@ public class StoreReportsController {
     }
 
 
+    @GetMapping(value = "/voucherOrderGroupList", name = "group-order-with-voucher-list")
+    public ResponseEntity<Object> voucherOrderGroupList(HttpServletRequest request,
+                                                      @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                                      @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                                      @RequestParam(defaultValue = "created", required = false) String sortBy,
+                                                      @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                                      @RequestParam(defaultValue = "0") int page,
+                                                      @RequestParam(defaultValue = "20") int pageSize) throws IOException {
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logPrefix = request.getRequestURI();
+        DashboardViewTotal viewTotal = new DashboardViewTotal();
+
+        OrderGroup orderGroup = new OrderGroup();
+
+
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<OrderGroup> example = Example.of(orderGroup, matcher);
+
+        Pageable pageable = null;
+        if (sortingOrder.equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        } else {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+        }
+        Page<OrderGroup> products = orderGroupRepository
+                .findAll(getSpecGroupOrderWithVoucherDailySaleWithDatesBetween(from, to, example), pageable);
+
+        response.setData(products);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
     @GetMapping(value = "/orderGroupList", name = "group-order-sales-list")
     public ResponseEntity<Object> dailyGroupOrderList(HttpServletRequest request,
                                                       @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
@@ -766,7 +803,7 @@ public class StoreReportsController {
             pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
         }
         Page<OrderGroup> products = orderGroupRepository
-                .findAll(getSpecGroupOrderDailySaleWithDatesBetween(from, to, example), pageable);
+                .findAll(getSpecGroupOrderListDailySaleWithDatesBetween(from, to, example), pageable);
 
         response.setData(products);
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -815,7 +852,7 @@ public class StoreReportsController {
         };
     }
 
-    public Specification<OrderGroup> getSpecGroupOrderDailySaleWithDatesBetween(
+    public Specification<OrderGroup> getSpecGroupOrderWithVoucherDailySaleWithDatesBetween(
             Date from, Date to, Example<OrderGroup> example) {
 
         return (root, query, builder) -> {
@@ -831,6 +868,24 @@ public class StoreReportsController {
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+    public Specification<OrderGroup> getSpecGroupOrderListDailySaleWithDatesBetween(
+            Date from, Date to, Example<OrderGroup> example) {
+
+        return (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+
+            if (from != null && to != null) {
+                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
+            }
+            predicates.add(builder.equal(root.get("paymentStatus"),"PAID"));
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[0]));
         };
     }
 
