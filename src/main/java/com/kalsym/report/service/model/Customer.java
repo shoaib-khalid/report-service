@@ -21,4 +21,5 @@ public class Customer implements Serializable {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
     private String name;
+    private String username;
 }
