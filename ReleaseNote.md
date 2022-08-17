@@ -1,4 +1,11 @@
 ##################################################
+# Version v.3.4.5- Staging | 17-Aug-2022
+##################################################
+### Code Changes:
+1. Added New Parameter Field Called Country Code - All the endpoint
+
+
+##################################################
 # Version v.3.4.4| 26-July-2022
 ##################################################
 ### Code Changes:
@@ -196,7 +203,7 @@
 
 Update DB insertProductDailySales **procedure**
 UPDATE product_daily_sale r
-SET r.ranking =(SELECT ranking FROM (SELECT a.`date`, a.productId,a.totalOrders, a.storeId, ROW_NUMBER() OVER(PARTITION BY a.`date` ,a.storeId ORDER by a.totalOrders desc  )as ranking
+SET r.ranking =(SELECT ranking FROM (SELECT a.`date`, a.productId,a.totalOrders, a.storeId, ROW_NUMBER() OVER(PARTITION BY a.`date` , a.storeId ORDER by a.totalOrders desc  )as ranking
 FROM symplified.product_daily_sale a ORDER by a.`date`  ,ranking ASC ) list WHERE list.productId = r.productId and list.`date` = r.`date`);
 
 ##################################################

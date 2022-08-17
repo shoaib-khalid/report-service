@@ -71,7 +71,9 @@ public class OrderGroup implements Serializable {
     @Transient
     private String shipmentName;
 
+/*
     @Transient
+*/
     private String regionCountryId;
 
     private String paymentStatus;
