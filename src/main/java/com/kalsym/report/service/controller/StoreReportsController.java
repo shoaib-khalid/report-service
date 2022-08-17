@@ -10,8 +10,10 @@ import com.kalsym.report.service.service.ReportsGenerator;
 import com.kalsym.report.service.service.enums.OrderStatus;
 import com.kalsym.report.service.utils.HttpResponse;
 import com.kalsym.report.service.utils.Logger;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.convert.QueryByExamplePredicateBuilder;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -27,20 +30,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "store/{storeId}")
 public class StoreReportsController {
 
-    @Value("${services.user-service.session_details:not-known}")
-    String userServiceUrl;
-
     @Autowired
     OrderRepository orderRepository;
-
-    @Autowired
-    ProductInventoryRepository productInventoryRepository;
 
     @Autowired
     ProductRepository productRepository;
@@ -90,7 +86,8 @@ public class StoreReportsController {
                                               @RequestParam(defaultValue = "created", required = false) String sortBy,
                                               @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                               @RequestParam(defaultValue = "0") int page,
-                                              @RequestParam(defaultValue = "20") int pageSize) throws Exception {
+                                              @RequestParam(defaultValue = "20") int pageSize,
+                                              @RequestParam(defaultValue = "MYS") String countryCode) {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
 
@@ -109,96 +106,89 @@ public class StoreReportsController {
             sDate.add(Calendar.DAY_OF_MONTH, i);
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
-            // System.err.println(" myFormat.format(sDate.getTime()) : " +
-            // myFormat.format(sDate.getTime()));
             List<Object[]> orders;
 
             if (!storeId.equals("null")) {
                 // System.err.println("START DATE : " + startDate + " END DATE : " + enDate);
-                orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatus(storeId, stDate, enDate, "PAID",
-                        sortBy, sortingOrder);
+                orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatusAndCountryCode(storeId, stDate, enDate, "PAID",
+                        sortBy, sortingOrder, countryCode);
             } else {
-                orders = orderRepository.findAllByDateRangeAndPaymentStatus(stDate, enDate, OrderStatus.PAID.name(),
-                        sortBy, sortingOrder);
+                orders = orderRepository.findAllByDateRangeAndPaymentStatusAndCountryCode(stDate, enDate, OrderStatus.PAID.name(),
+                        sortBy, sortingOrder, countryCode);
             }
             System.out.println("orders.size() : " + orders.size());
-            for (int k = 0; k < orders.size(); k++) {
+            for (Object[] order : orders) {
 
                 Response.Sales sale = new Response.Sales();
-                sale.setStoreId(orders.get(k)[1].toString());
-                sale.setMerchantName(orders.get(k)[2].toString());
-                sale.setStoreName(orders.get(k)[4].toString());
-                String total = orders.get(k)[5].toString();
+                sale.setStoreId(order[1].toString());
+                sale.setMerchantName(order[2].toString());
+                sale.setStoreName(order[4].toString());
+                String total = order[5].toString();
                 sale.setTotal(Float.parseFloat(total));
-                sale.setCustomerName(orders.get(k)[7].toString());
-                if (orders.get(k)[8] != null) {
-                    String commission = orders.get(k)[8].toString();
+                sale.setCustomerName(order[7].toString());
+                if (order[8] != null) {
+                    String commission = order[8].toString();
                     sale.setCommission(Float.parseFloat(commission));
                 } else {
                     String emptyValue = "0.0";
                     sale.setCommission(Float.parseFloat(emptyValue));
                 }
-                if (orders.get(k)[9] != null) {
-                    String deliveryCharge = orders.get(k)[9].toString();
+                if (order[9] != null) {
+                    String deliveryCharge = order[9].toString();
                     sale.setDeliveryCharge(Float.parseFloat(deliveryCharge));
                 } else {
                     String emptyValue = "0.0";
                     sale.setDeliveryCharge(Float.parseFloat(emptyValue));
                 }
-                if (orders.get(k)[10] != null) {
-                    String serviceCharge = orders.get(k)[10].toString();
+                if (order[10] != null) {
+                    String serviceCharge = order[10].toString();
                     sale.setServiceCharge(Float.parseFloat(serviceCharge));
                 } else {
                     String emptyValue = "0.0";
                     sale.setServiceCharge(Float.parseFloat(emptyValue));
                 }
-                if (orders.get(k)[13] != null) {
-                    String subTotal = orders.get(k)[13].toString();
+                if (order[13] != null) {
+                    String subTotal = order[13].toString();
                     sale.setSubTotal(Float.parseFloat(subTotal));
                 } else {
                     String emptyValue = "0.0";
                     sale.setSubTotal(Float.parseFloat(emptyValue));
                 }
-                if (orders.get(k)[14] != null) {
-                    String orderDiscount = orders.get(k)[14].toString();
+                if (order[14] != null) {
+                    String orderDiscount = order[14].toString();
                     sale.setOrderDiscount(Float.parseFloat(orderDiscount));
                 } else {
                     String emptyValue = "0.0";
                     sale.setOrderDiscount(Float.parseFloat(emptyValue));
                 }
-                if (orders.get(k)[15] != null) {
-                    String deliveryDiscount = orders.get(k)[15].toString();
+                if (order[15] != null) {
+                    String deliveryDiscount = order[15].toString();
                     sale.setDeliveryDiscount(Float.parseFloat(deliveryDiscount));
                 } else {
                     String emptyValue = "0.0";
                     sale.setDeliveryDiscount(Float.parseFloat(emptyValue));
                 }
-                if (orders.get(k)[16] != null) {
-                    String storeVoucherDiscount = orders.get(k)[16].toString();
+                if (order[16] != null) {
+                    String storeVoucherDiscount = order[16].toString();
                     sale.setStoreVoucherDiscount(Float.parseFloat(storeVoucherDiscount));
                 } else {
                     String emptyValue = "0.0";
                     sale.setStoreVoucherDiscount(Float.parseFloat(emptyValue));
                 }
-                if (orders.get(k)[17] != null) {
-                    String voucherCode = orders.get(k)[17].toString();
+                if (order[17] != null) {
+                    String voucherCode = order[17].toString();
                     sale.setVoucherCode(voucherCode);
                 } else {
                     String emptyValue = "";
                     sale.setVoucherCode(emptyValue);
                 }
-                sale.setOrderStatus(orders.get(k)[11].toString());
-                sale.setDeliveryStatus(orders.get(k)[12].toString());
+                sale.setOrderStatus(order[11].toString());
+                sale.setDeliveryStatus(order[12].toString());
                 reportResponseList.add(sale);
             }
             list.setDate(myFormat.format(sDate.getTime()));
             list.setSales(reportResponseList);
             lists.add(list);
-            // if (!reportResponseList.isEmpty()) {
-            // list.setDate(myFormat.format(sDate.getTime()));
-            // list.setSales(reportResponseList);
-            // lists.add(list);
-            // }
         }
 
         response.setSuccessStatus(HttpStatus.OK);
@@ -228,7 +218,8 @@ public class StoreReportsController {
                                                            @RequestParam(defaultValue = "created", required = false) String sortBy,
                                                            @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                            @RequestParam(defaultValue = "0") int page,
-                                                           @RequestParam(defaultValue = "20") int pageSize) throws Exception {
+                                                           @RequestParam(defaultValue = "20") int pageSize,
+                                                           @RequestParam(defaultValue = "MYS") String countryCode) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Order orderMatch = new Order();
@@ -246,7 +237,7 @@ public class StoreReportsController {
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
         Page<Order> orders = orderRepository
-                .findAll(getSpecWithDatesBetween(startDate, endDate, OrderStatus.PAID, orderExample), pageable);
+                .findAll(getSpecWithDatesBetween(startDate, endDate, OrderStatus.PAID, orderExample, countryCode), pageable);
 
         response.setData(orders);
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -259,7 +250,8 @@ public class StoreReportsController {
                                                          @RequestParam(defaultValue = "date", required = false) String sortBy,
                                                          @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                          @RequestParam(defaultValue = "0") int page,
-                                                         @RequestParam(defaultValue = "20") int pageSize, @PathVariable("storeId") String storeId) throws Exception {
+                                                         @RequestParam(defaultValue = "20") int pageSize, @PathVariable("storeId") String storeId,
+                                                         @RequestParam(defaultValue = "MYS") String countryCode) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -281,10 +273,7 @@ public class StoreReportsController {
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
 
-            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, storeId, "PAID", 5);
-            // System.err.println("test obe: " + objects.get(1)[0].toString());
-            // List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate,
-            // enDate, 5);
+            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, storeId, "PAID", 5, countryCode);
 
             for (int k = 0; k < objects.size(); k++) {
                 Response.DailyTopProduct product = new Response.DailyTopProduct();
@@ -317,14 +306,16 @@ public class StoreReportsController {
                                                                  @RequestParam(defaultValue = "date", required = false) String sortBy,
                                                                  @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                                  @RequestParam(defaultValue = "0") int page,
-                                                                 @RequestParam(defaultValue = "20") int pageSize, @PathVariable("storeId") String storeId) throws Exception {
+                                                                 @RequestParam(defaultValue = "20") int pageSize, @PathVariable("storeId") String storeId,
+                                                                 @RequestParam(defaultValue = "MYS") String countryCode) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         ProductDailySale productDailySale = new ProductDailySale();
         if (storeId != null && !storeId.isEmpty()) {
-            productDailySale.setStoreId(storeId);
+            Store store = storeRepository.getOne(storeId);
+            productDailySale.setStore(store);
         }
 
         ExampleMatcher matcher = ExampleMatcher
@@ -334,8 +325,6 @@ public class StoreReportsController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<ProductDailySale> example = Example.of(productDailySale, matcher);
 
-        // Pageable pageable = PageRequest.of(page, pageSize,
-        // Sort.by(sortBy).descending());
         Pageable pageable = null;
         if (sortingOrder.equalsIgnoreCase("desc")) {
             pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending().and(Sort.by("ranking").ascending()));
@@ -343,7 +332,7 @@ public class StoreReportsController {
             pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending().and(Sort.by("ranking").ascending()));
         }
         Page<ProductDailySale> products = productDailySalesRepository
-                .findAll(getSpecDailySaleWithDatesBetween(startDate, endDate, example), pageable);
+                .findAll(getSpecDailySaleWithDatesBetween(startDate, endDate, example, countryCode), pageable);
 
         response.setData(products);
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -357,7 +346,8 @@ public class StoreReportsController {
                                                    @RequestParam(defaultValue = "cycleStartDate", required = false) String sortBy,
                                                    @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                    @RequestParam(defaultValue = "0") int page,
-                                                   @RequestParam(defaultValue = "20") int pageSize) throws Exception {
+                                                   @RequestParam(defaultValue = "20") int pageSize,
+                                                   @RequestParam(defaultValue = "MYS") String countryCode) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logprefix = request.getRequestURI() + " ";
 
@@ -414,12 +404,13 @@ public class StoreReportsController {
                                                     @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                     @RequestParam(defaultValue = "0") int page,
                                                     @RequestParam(defaultValue = "20") int pageSize,
-                                                    @PathVariable("storeId") String storeId) throws IOException {
+                                                    @PathVariable("storeId") String storeId,
+                                                    @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         Logger.application.info(logPrefix, "", "");
-        Logger.application.info("querystring: " + request.getQueryString(), "");
+        Logger.application.info("queryString: " + request.getQueryString(), "");
         Logger.application.info("from: " + from.toString(), "");
         Logger.application.info("to: " + to.toString(), "");
 
@@ -432,7 +423,7 @@ public class StoreReportsController {
         Logger.application.info("pageable: " + pageable, "");
 
         response.setSuccessStatus(HttpStatus.OK);
-        Logger.application.info("Storeid: " + storeId, "");
+        Logger.application.info("StoreId: " + storeId, "");
 
         if (!storeId.equals("null")) {
             response.setData(storeDailySalesRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
@@ -450,7 +441,8 @@ public class StoreReportsController {
                                                              @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                              @RequestParam(defaultValue = "0") int page,
                                                              @RequestParam(defaultValue = "20") int pageSize,
-                                                             @PathVariable("storeId") String storeId) throws IOException {
+                                                             @PathVariable("storeId") String storeId,
+                                                             @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
@@ -458,15 +450,6 @@ public class StoreReportsController {
         Logger.application.info("query string: " + request.getQueryString(), "");
         Logger.application.info("from: " + from.toString(), "");
         Logger.application.info("to: " + to.toString(), "");
-
-        // Pageable pageable = null;
-        // if (sortingOrder.equalsIgnoreCase("desc")) {
-        // pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-        // } else {
-        // pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
-        // }
-        // Logger.application.info("pageable: " + pageable, "");
-
         StoreDailySale example = new StoreDailySale();
 
         if (storeId != null && !storeId.isEmpty()) {
@@ -483,27 +466,28 @@ public class StoreReportsController {
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("date").descending());
         Page<StoreDailySale> storeDailySale = storeDailySalesRepository
-                .findAll(getMerchantDailySaleWithDateBetween(from, to, orderExample), pageable);
+                .findAll(getMerchantDailySaleWithDateBetween(from, to, orderExample, countryCode), pageable);
 
         response.setData(storeDailySale);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/daily_top_products")
-    public ResponseEntity<HttpResponse> dailytTopProducts(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> dailyTopProducts(HttpServletRequest request,
                                                           @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
                                                           @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
                                                           @RequestParam(defaultValue = "date", required = false) String sortBy,
                                                           @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
                                                           @RequestParam(defaultValue = "0") int page,
                                                           @RequestParam(defaultValue = "20") int pageSize,
-                                                          @PathVariable("storeId") String storeId) throws IOException {
+                                                          @PathVariable("storeId") String storeId,
+                                                          @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
         String logPrefix = request.getRequestURI();
         Logger.application.info(logPrefix, "", "");
-        Logger.application.info("querystring: " + request.getQueryString(), "");
+        Logger.application.info("queryString: " + request.getQueryString(), "");
         Logger.application.info("from: " + from.toString(), "");
         Logger.application.info("to: " + to.toString(), "");
         Logger.application.info("storeId: " + storeId, "");
@@ -523,7 +507,8 @@ public class StoreReportsController {
 
     @PostMapping(value = "/settlement", name = "store-report-settlement-post")
     public ResponseEntity<HttpResponse> settlement(HttpServletRequest request,
-                                                   @PathVariable("storeId") String storeId) throws ParseException {
+                                                   @PathVariable("storeId") String storeId,
+                                                   @RequestParam(defaultValue = "MYS") String countryCode) throws ParseException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         reportsGenerator.dailySalesScheduler();
@@ -536,23 +521,24 @@ public class StoreReportsController {
     @GetMapping(value = "/totalSales", name = "store-total-sales-count-pending")
     public ResponseEntity<Object> totalSalesCount(HttpServletRequest request, @PathVariable("storeId") String storeId,
                                                   @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-                                                  @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to)
+                                                  @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                                  @RequestParam(defaultValue = "MYS") String countryCode)
             throws IOException {
         // TODO: not completed
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
         Date date = new Date();
-        Date enddate = new Date();
+        Date endDate = new Date();
         // daily sales
-        enddate.setDate(date.getDate() + 1);
+        endDate.setDate(date.getDate() + 1);
 
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
 
         String todayDate = simpleDateFormat.format(date);
 
-        String todayEndDate = simpleDateFormat.format(enddate);
+        String todayEndDate = simpleDateFormat.format(endDate);
 
         List<Object[]> dailyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, todayDate, todayEndDate);
         Set<OrderCount> todaySales = new HashSet<>();
@@ -596,11 +582,11 @@ public class StoreReportsController {
 
         Logger.application.info("First Month  : " + firstDayOfMonth);
         Logger.application.info("Second Month : " + lastDayOfMonth);
-        List<Object[]> montlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId,
+        List<Object[]> monthlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId,
                 simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth));
         Set<OrderCount> monthlySales = new HashSet<>();
 
-        for (Object[] value : montlyOrder) {
+        for (Object[] value : monthlyOrder) {
 
             OrderCount monthlyOrderCount = new OrderCount();
             monthlyOrderCount.setCompletionStatus(value[0].toString());
@@ -641,7 +627,8 @@ public class StoreReportsController {
     @GetMapping(value = "/weeklySale", name = "store-weekly-sales-count")
     public ResponseEntity<Object> weeklySale(HttpServletRequest request, @PathVariable("storeId") String storeId,
                                              @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-                                             @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to)
+                                             @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                             @RequestParam(defaultValue = "MYS") String countryCode)
             throws IOException {
         // TODO: not completed
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -656,8 +643,6 @@ public class StoreReportsController {
         cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
         Date firstDayOfWeek = from;
         Date lastDayOfWeek = to;
-        // firstDayOfWeek.setDate(firstDayOfWeek.getDate());
-        // lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
         Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
 
         List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(from),
@@ -685,7 +670,8 @@ public class StoreReportsController {
                                               @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
                                               @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
                                               @RequestParam(defaultValue = "created", required = false) String sortBy,
-                                              @RequestParam(defaultValue = "ASC", required = false) String sortingOrder) throws IOException {
+                                              @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                              @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
@@ -698,8 +684,7 @@ public class StoreReportsController {
         cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
         Date firstDayOfWeek = from;
         Date lastDayOfWeek = to;
-        // firstDayOfWeek.setDate(firstDayOfWeek.getDate());
-        // lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
+
         Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
 
         List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRangeAndGroup(storeId,
@@ -740,12 +725,13 @@ public class StoreReportsController {
 
     @GetMapping(value = "/voucherOrderGroupList", name = "group-order-with-voucher-list")
     public ResponseEntity<Object> voucherOrderGroupList(HttpServletRequest request,
-                                                      @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-                                                      @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
-                                                      @RequestParam(defaultValue = "created", required = false) String sortBy,
-                                                      @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
-                                                      @RequestParam(defaultValue = "0") int page,
-                                                      @RequestParam(defaultValue = "20") int pageSize) throws IOException {
+                                                        @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                                        @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                                        @RequestParam(defaultValue = "created", required = false) String sortBy,
+                                                        @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                                        @RequestParam(defaultValue = "0") int page,
+                                                        @RequestParam(defaultValue = "20") int pageSize,
+                                                        @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
@@ -767,7 +753,7 @@ public class StoreReportsController {
             pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
         }
         Page<OrderGroup> products = orderGroupRepository
-                .findAll(getSpecGroupOrderWithVoucherDailySaleWithDatesBetween(from, to, example), pageable);
+                .findAll(getSpecGroupOrderWithVoucherDailySaleWithDatesBetween(from, to, example, countryCode), pageable);
 
         response.setData(products);
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -781,7 +767,8 @@ public class StoreReportsController {
                                                       @RequestParam(defaultValue = "created", required = false) String sortBy,
                                                       @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
                                                       @RequestParam(defaultValue = "0") int page,
-                                                      @RequestParam(defaultValue = "20") int pageSize) throws IOException {
+                                                      @RequestParam(defaultValue = "20") int pageSize,
+                                                      @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
@@ -803,17 +790,18 @@ public class StoreReportsController {
             pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
         }
         Page<OrderGroup> products = orderGroupRepository
-                .findAll(getSpecGroupOrderListDailySaleWithDatesBetween(from, to, example), pageable);
+                .findAll(getSpecGroupOrderListDailySaleWithDatesBetween(from, to, example, countryCode), pageable);
 
         response.setData(products);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     public Specification<Order> getSpecWithDatesBetween(
-            Date from, Date to, OrderStatus completionStatus, Example<Order> example) {
+            Date from, Date to, OrderStatus completionStatus, Example<Order> example, String countryCode) {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
+            Join<Order, Store> store = root.join("store");
 
             if (from != null && to != null) {
                 to.setDate(to.getDate() + 1);
@@ -829,6 +817,8 @@ public class StoreReportsController {
             } else if (completionStatus != null) {
                 predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
             }
+            predicates.add(builder.equal(store.get("regionCountryId"),countryCode));
+
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
@@ -836,16 +826,18 @@ public class StoreReportsController {
     }
 
     public Specification<ProductDailySale> getSpecDailySaleWithDatesBetween(
-            Date from, Date to, Example<ProductDailySale> example) {
+            Date from, Date to, Example<ProductDailySale> example, String countryCode) {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
+            Join<Order, Store> store = root.join("store");
 
             if (from != null && to != null) {
                 to.setDate(to.getDate() + 1);
                 predicates.add(builder.greaterThanOrEqualTo(root.get("date"), from));
                 predicates.add(builder.lessThanOrEqualTo(root.get("date"), to));
             }
+            predicates.add(builder.equal(store.get("regionCountryId"),countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
@@ -853,7 +845,7 @@ public class StoreReportsController {
     }
 
     public Specification<OrderGroup> getSpecGroupOrderWithVoucherDailySaleWithDatesBetween(
-            Date from, Date to, Example<OrderGroup> example) {
+            Date from, Date to, Example<OrderGroup> example, String countryCode) {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
@@ -864,7 +856,8 @@ public class StoreReportsController {
                 predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
             }
             predicates.add(builder.isNotNull(root.get("voucher")));
-            predicates.add(builder.equal(root.get("paymentStatus"),"PAID"));
+            predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
+            predicates.add(builder.equal(root.get("regionCountryId"), countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
@@ -872,7 +865,7 @@ public class StoreReportsController {
     }
 
     public Specification<OrderGroup> getSpecGroupOrderListDailySaleWithDatesBetween(
-            Date from, Date to, Example<OrderGroup> example) {
+            Date from, Date to, Example<OrderGroup> example, String countryCode) {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
@@ -882,7 +875,8 @@ public class StoreReportsController {
                 predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
                 predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
             }
-            predicates.add(builder.equal(root.get("paymentStatus"),"PAID"));
+            predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
+            predicates.add(builder.equal(root.get("regionCountryId"), countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[0]));
@@ -890,22 +884,28 @@ public class StoreReportsController {
     }
 
     public Specification<StoreDailySale> getMerchantDailySaleWithDateBetween(
-            Date from, Date to, Example<StoreDailySale> example) {
+            Date from, Date to, Example<StoreDailySale> example, String countryCode) {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
+            Join<Order, Store> store = root.join("store");
+
 
             if (from != null && to != null) {
                 // to.setDate(to.getDate() + 1);
                 predicates.add(builder.greaterThanOrEqualTo(root.get("date"), from));
                 predicates.add(builder.lessThanOrEqualTo(root.get("date"), to));
             }
+            predicates.add(builder.equal(store.get("regionCountryId"),countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
 
+    @Getter
+    @Setter
+    @ToString
     public static class Statement {
 
         private int startWeekNo;
@@ -914,45 +914,6 @@ public class StoreReportsController {
         private String endMonth;
         private Integer pageSize;
 
-        public int getStartWeekNo() {
-            return startWeekNo;
-        }
-
-        public void setStartWeekNo(int startWeekNo) {
-            this.startWeekNo = startWeekNo;
-        }
-
-        public int getEndWeekNo() {
-            return endWeekNo;
-        }
-
-        public void setEndWeekNo(int endWeekNo) {
-            this.endWeekNo = endWeekNo;
-        }
-
-        public String getStartMonth() {
-            return startMonth;
-        }
-
-        public void setStartMonth(String startMonth) {
-            this.startMonth = startMonth;
-        }
-
-        public String getEndMonth() {
-            return endMonth;
-        }
-
-        public void setEndMonth(String endMonth) {
-            this.endMonth = endMonth;
-        }
-
-        public Integer getPageSize() {
-            return pageSize;
-        }
-
-        public void setPageSize(Integer pageSize) {
-            this.pageSize = pageSize;
-        }
     }
 
 }
