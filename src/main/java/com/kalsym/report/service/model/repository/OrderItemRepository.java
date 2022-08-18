@@ -16,9 +16,9 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
                     "FROM symplified.order_item ot " +
                     "INNER JOIN symplified.order o ON o.id = ot.orderId " +
                     "INNER JOIN symplified.store s ON s.id = o.storeId " +
-                    "WHERE created > :date1" +
-                        "AND created < :date2 " +
-                        "AND storeId = :storeId " +
+                    "WHERE o.created > :date1 " +
+                        "AND o.created < :date2 " +
+                        "AND o.storeId = :storeId " +
                         "AND o.paymentStatus= :status " +
                         "AND s.regionCountryId = :countryCode " +
                     "GROUP BY ot.productId " +

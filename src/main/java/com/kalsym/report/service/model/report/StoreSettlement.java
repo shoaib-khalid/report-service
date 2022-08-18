@@ -27,7 +27,11 @@ public class StoreSettlement implements Serializable {
     private String id;
     private String cycle;
 
-    private String storeId;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "storeId", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Store store;
+
     private String clientId;
     private String clientName;
     private String storeName;

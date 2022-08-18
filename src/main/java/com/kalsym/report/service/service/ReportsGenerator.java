@@ -144,8 +144,12 @@ public class ReportsGenerator {
                     dailySalesStoreSettlement.setTotalDeliveryDiscount(dailySalesStoreSettlement.getTotalDeliveryDiscount() + dailySale.getTotalDeliveryDiscount());
                     dailySale.setSettlementReferenceId(dailySalesStoreSettlement.getReferenceId());
 
-                    storeDailySalesRepository.save(dailySale);
-                    storeSettlementsRepository.save(dailySalesStoreSettlement);
+                    try {
+                        storeDailySalesRepository.save(dailySale);
+                        storeSettlementsRepository.save(dailySalesStoreSettlement);
+                    } catch (Exception exception) {
+                        Logger.application.info("Exception " + storeId + " : " + exception.getMessage());
+                    }
 
                 } else {
 
@@ -173,7 +177,7 @@ public class ReportsGenerator {
                     if (storeOpt.isPresent()) {
 
                         Store settlementStore = storeOpt.get();
-                        dailySalesStoreSettlement.setStoreId(storeId);
+                        dailySalesStoreSettlement.setStore(settlementStore);
                         settlementStoreNameAbbreviation = settlementStore.getNameAbreviation();
                         settlementStoreCountryId = settlementStore.getRegionCountryStateId();
                         dailySalesStoreSettlement.setStoreName(settlementStore.getName());
