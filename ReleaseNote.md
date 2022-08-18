@@ -1,4 +1,11 @@
 ##################################################
+# Version v.3.4.6- Staging | 18-Aug-2022
+##################################################
+### Code Changes:
+1. Added New Parameter Field Called Country Code - - Bug Fixed
+
+
+##################################################
 # Version v.3.4.5- Staging | 17-Aug-2022
 ##################################################
 ### Code Changes:
@@ -297,5 +304,9 @@ END
 
 
 
+
+
+ALTER TABLE symplified.product_daily_sale MODIFY COLUMN storeId varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL;
+ALTER TABLE symplified.product_daily_sale ADD CONSTRAINT product_daily_sale_FK FOREIGN KEY (storeId) REFERENCES symplified.store(id);
 
 

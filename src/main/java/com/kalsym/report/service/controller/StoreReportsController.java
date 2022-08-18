@@ -64,19 +64,7 @@ public class StoreReportsController {
     @Autowired
     OrderGroupRepository orderGroupRepository;
 
-    public static Specification<StoreSettlement> getStoreSettlementsSpec(
-            String from, String to, Example<StoreSettlement> example) {
-        return (root, query, builder) -> {
-            final List<Predicate> predicates = new ArrayList<>();
-            if (from != null && to != null) {
-                predicates.add(builder.greaterThanOrEqualTo(root.get("cycleStartDate"), from));
-                predicates.add(builder.lessThanOrEqualTo(root.get("cycleStartDate"), to));
-            }
-            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
-            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
-        };
-    }
 
     @GetMapping(value = "/report/detailedDailySales", name = "store-detail-report-sale-get")
     public ResponseEntity<HttpResponse> sales(HttpServletRequest request,
@@ -313,7 +301,7 @@ public class StoreReportsController {
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         ProductDailySale productDailySale = new ProductDailySale();
-        if (storeId != null && !storeId.isEmpty()) {
+        if (!storeId.contains("null")) {
             Store store = storeRepository.getOne(storeId);
             productDailySale.setStore(store);
         }
@@ -352,8 +340,9 @@ public class StoreReportsController {
         String logprefix = request.getRequestURI() + " ";
 
         StoreSettlement storeSettlement = new StoreSettlement();
-        if (!storeId.equals("null")) {
-            storeSettlement.setStoreId(storeId);
+        if (!storeId.contains("null")) {
+            Store store = storeRepository.getOne(storeId);
+            storeSettlement.setStore(store);
         }
         Logger.application.info(Logger.pattern, ReportServiceApplication.VERSION, logprefix,
                 "before from : " + from + ", to : " + to);
@@ -389,7 +378,7 @@ public class StoreReportsController {
             pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
         }
         Page<StoreSettlement> settlements = storeSettlementsRepository
-                .findAll(getStoreSettlementsSpec(startDate, endDate, example), pageable);
+                .findAll(getStoreSettlementsSpec(startDate, endDate, example, countryCode), pageable);
 
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(settlements);
@@ -454,7 +443,7 @@ public class StoreReportsController {
 
         if (storeId != null && !storeId.isEmpty()) {
             Store store = storeRepository.getOne(storeId);
-            example.setStore(store);
+            example.setStoreId(store.getId());
         }
 
         ExampleMatcher matcher = ExampleMatcher
@@ -830,7 +819,7 @@ public class StoreReportsController {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
-            Join<Order, Store> store = root.join("store");
+            Join<ProductDailySale, Store> store = root.join("store");
 
             if (from != null && to != null) {
                 to.setDate(to.getDate() + 1);
@@ -888,13 +877,30 @@ public class StoreReportsController {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
-            Join<Order, Store> store = root.join("store");
+//            Join<StoreDailySale, Store> store = root.join("store");
 
 
             if (from != null && to != null) {
                 // to.setDate(to.getDate() + 1);
                 predicates.add(builder.greaterThanOrEqualTo(root.get("date"), from));
                 predicates.add(builder.lessThanOrEqualTo(root.get("date"), to));
+            }
+//            predicates.add(builder.equal(store.get("regionCountryId"),countryCode));
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+    public static Specification<StoreSettlement> getStoreSettlementsSpec(
+            String from, String to, Example<StoreSettlement> example, String countryCode) {
+        return (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+            Join<StoreSettlement, Store> store = root.join("store");
+
+            if (from != null && to != null) {
+                predicates.add(builder.greaterThanOrEqualTo(root.get("cycleStartDate"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("cycleStartDate"), to));
             }
             predicates.add(builder.equal(store.get("regionCountryId"),countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));

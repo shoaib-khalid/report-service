@@ -23,21 +23,20 @@ public interface StoreDailySalesRepository extends PagingAndSortingRepository<St
      * @param pageable
      * @return
      */
-    public Page<StoreDailySale> findByStoreIdAndDateBetween(String storeId, Date from, Date to, Pageable pageable);
+    Page<StoreDailySale> findByStoreIdAndDateBetween(String storeId, Date from, Date to, Pageable pageable);
 
-    public Page<StoreDailySale> findByDateBetween(Date from, Date to, Pageable pageable);
+    Page<StoreDailySale> findByDateBetween(Date from, Date to, Pageable pageable);
 
-    public List<StoreDailySale> findByDateBetween(Date from, Date to);
+    List<StoreDailySale> findByDateBetween(Date from, Date to);
 
-    public List<StoreDailySale> findByStoreId(String storeId);
 
     @Procedure("insertDailySales")
-    public void insertDailySales();
+    void insertDailySales();
 
     @Procedure("insertProductDailySales")
-    public void insertProductDailySales();
+    void insertProductDailySales();
 
     @Procedure("insertStoreDailyTopProduct")
-    public void insertStoreDailyTopProduct();
+    void insertStoreDailyTopProduct();
 
 }

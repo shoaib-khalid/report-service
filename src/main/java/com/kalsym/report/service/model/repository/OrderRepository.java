@@ -14,10 +14,6 @@ import java.util.List;
 public interface OrderRepository extends PagingAndSortingRepository<Order, String>, JpaRepository<Order, String>, JpaSpecificationExecutor<Order> {
 
 
-    List<Order> findAllByStoreIdAndCreatedAfterAndCreatedBeforeAndPaymentStatus(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("status") String status);
-
-    List<Order> findAllByStoreIdAndCreatedAfterAndCreatedBefore(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
-
     @Query(value = "SELECT o.id, o.storeId, c.name AS clientName, c.username, s.name AS storeName, o.total, o.created, osd.receiverName AS customerName, o.klCommission, o.deliveryCharges," +
             "o.storeServiceCharges, o.paymentStatus, o.completionStatus, o.subTotal ,o.appliedDiscount , o.deliveryDiscount , o.storeVoucherDiscount ,  v.voucherCode FROM symplified.`order` o LEFT JOIN symplified.voucher v ON o.storeVoucherId = v.id INNER JOIN symplified.store s INNER JOIN symplified.client c " +
             "INNER JOIN symplified.order_shipment_detail osd ON o.storeId = s.id AND s.clientId = c.id AND o.id = osd.orderId" +
@@ -44,7 +40,4 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     List<Object[]> fineAllByStatusAndDateRangeAndGroup(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
 
 
-    @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalsales " +
-            "FROM symplified.`order` o WHERE o.storeId = :storeId GROUP BY o.completionStatus", nativeQuery = true)
-    List<Object[]> findAllByStoreId(@Param("storeId") String storeId);
 }
