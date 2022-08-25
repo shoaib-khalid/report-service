@@ -25,9 +25,20 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 public class SwaggerConfig {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String DEFAULT_INCLUDE_PATTERN = "/.*";
+
+
+    private ApiInfo apiInfo() {
+        return new ApiInfoBuilder()
+                .title("report-service")
+                .description("Used to manage users, roles, authorities for clients.")
+                .termsOfServiceUrl("not added yet")
+                .license("not added yet")
+                .licenseUrl("").version("3.4.7-Production").build();
+    }
 
     @Bean
-    public Docket productServiceApi() {
+    public Docket reportServiceApi() {
 
         Docket docket = new Docket(DocumentationType.SWAGGER_2)
                 .pathMapping("/")
@@ -51,16 +62,7 @@ public class SwaggerConfig {
 
     }
 
-    private ApiInfo apiInfo() {
-        return new ApiInfoBuilder()
-                .title("report-service")
-                .description("Used to manage users, roles, authorities for clients.")
-                .termsOfServiceUrl("not added yet")
-                .license("not added yet")
-                .licenseUrl("").version("3.4.6-Staging").build();
-    }
 
-    public static final String DEFAULT_INCLUDE_PATTERN = "/.*";
 
     public SecurityContext securityContext() {
         return SecurityContext.builder()

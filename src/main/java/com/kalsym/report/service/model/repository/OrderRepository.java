@@ -30,12 +30,12 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
             " WHERE   o.created > :startDate AND o.created < :endDate AND o.paymentStatus = :status AND s.regionCountryId = :countryCode ORDER BY :sort :value", nativeQuery = true)
     List<Object[]> findAllByDateRangeAndPaymentStatusAndCountryCode(@Param("startDate") String startDate, @Param("endDate") String endDate, @Param("status") String status, @Param("sort") String sort, @Param("value") String value, @Param("countryCode") String countryCode);
 
-    @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalsales " +
+    @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalSales " +
             "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId GROUP BY o.completionStatus", nativeQuery = true)
     List<Object[]> fineAllByStatusAndDateRange(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
 
 
-    @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalsales , DATE(created) " +
+    @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalSales , DATE(created) " +
             "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId GROUP BY o.completionStatus, DATE(created) ORDER BY  DATE(created) ASC", nativeQuery = true)
     List<Object[]> fineAllByStatusAndDateRangeAndGroup(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
 
