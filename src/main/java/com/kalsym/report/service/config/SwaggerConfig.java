@@ -34,7 +34,7 @@ public class SwaggerConfig {
                 .description("Used to manage users, roles, authorities for clients.")
                 .termsOfServiceUrl("not added yet")
                 .license("not added yet")
-                .licenseUrl("").version("3.4.7-Production").build();
+                .licenseUrl("").version("3.4.8-Production").build();
     }
 
     @Bean

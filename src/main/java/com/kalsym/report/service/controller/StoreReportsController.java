@@ -65,7 +65,6 @@ public class StoreReportsController {
     OrderGroupRepository orderGroupRepository;
 
 
-
     @GetMapping(value = "/report/detailedDailySales", name = "store-detail-report-sale-get")
     public ResponseEntity<HttpResponse> sales(HttpServletRequest request,
                                               @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
@@ -75,7 +74,7 @@ public class StoreReportsController {
                                               @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                               @RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "20") int pageSize,
-                                              @RequestParam(defaultValue = "MYS") String countryCode) {
+                                              @RequestParam(defaultValue = "") String countryCode) {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
 
@@ -101,8 +100,12 @@ public class StoreReportsController {
                 orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatusAndCountryCode(storeId, stDate, enDate, "PAID",
                         sortBy, sortingOrder, countryCode);
             } else {
-                orders = orderRepository.findAllByDateRangeAndPaymentStatusAndCountryCode(stDate, enDate, OrderStatus.PAID.name(),
-                        sortBy, sortingOrder, countryCode);
+                if (!countryCode.isEmpty())
+                    orders = orderRepository.findAllByDateRangeAndPaymentStatusAndCountryCode(stDate, enDate, OrderStatus.PAID.name(),
+                            sortBy, sortingOrder, countryCode);
+                else
+                    orders = orderRepository.findAllByDateRangeAndPaymentStatus(stDate, enDate, OrderStatus.PAID.name(),
+                            sortBy, sortingOrder);
             }
             System.out.println("orders.size() : " + orders.size());
             for (Object[] order : orders) {
@@ -207,7 +210,7 @@ public class StoreReportsController {
                                                            @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                            @RequestParam(defaultValue = "0") int page,
                                                            @RequestParam(defaultValue = "20") int pageSize,
-                                                           @RequestParam(defaultValue = "MYS") String countryCode) throws Exception {
+                                                           @RequestParam(defaultValue = "") String countryCode) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Order orderMatch = new Order();
@@ -239,7 +242,7 @@ public class StoreReportsController {
                                                          @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                          @RequestParam(defaultValue = "0") int page,
                                                          @RequestParam(defaultValue = "20") int pageSize, @PathVariable("storeId") String storeId,
-                                                         @RequestParam(defaultValue = "MYS") String countryCode) throws Exception {
+                                                         @RequestParam(defaultValue = "") String countryCode) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -260,8 +263,12 @@ public class StoreReportsController {
             sDate.add(Calendar.DAY_OF_MONTH, i);
             String stDate = myFormat.format(sDate.getTime()) + " 00:00:00";
             String enDate = myFormat.format(sDate.getTime()) + " 23:59:59";
+            List<Object[]> objects;
+            if (!countryCode.isEmpty())
+                objects = orderItemRepository.findAllByTopSaleProductByCountry(stDate, enDate, storeId, "PAID", 5, countryCode);
+            else
+                objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, storeId, "PAID", 5);
 
-            List<Object[]> objects = orderItemRepository.findAllByTopSaleProduct(stDate, enDate, storeId, "PAID", 5, countryCode);
 
             for (int k = 0; k < objects.size(); k++) {
                 Response.DailyTopProduct product = new Response.DailyTopProduct();
@@ -295,7 +302,7 @@ public class StoreReportsController {
                                                                  @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                                  @RequestParam(defaultValue = "0") int page,
                                                                  @RequestParam(defaultValue = "20") int pageSize, @PathVariable("storeId") String storeId,
-                                                                 @RequestParam(defaultValue = "MYS") String countryCode) throws Exception {
+                                                                 @RequestParam(defaultValue = "") String countryCode) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -335,7 +342,7 @@ public class StoreReportsController {
                                                    @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                    @RequestParam(defaultValue = "0") int page,
                                                    @RequestParam(defaultValue = "20") int pageSize,
-                                                   @RequestParam(defaultValue = "MYS") String countryCode) throws Exception {
+                                                   @RequestParam(defaultValue = "") String countryCode) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logprefix = request.getRequestURI() + " ";
 
@@ -394,7 +401,7 @@ public class StoreReportsController {
                                                     @RequestParam(defaultValue = "0") int page,
                                                     @RequestParam(defaultValue = "20") int pageSize,
                                                     @PathVariable("storeId") String storeId,
-                                                    @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
+                                                    @RequestParam(defaultValue = "") String countryCode) throws IOException {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
@@ -431,7 +438,7 @@ public class StoreReportsController {
                                                              @RequestParam(defaultValue = "0") int page,
                                                              @RequestParam(defaultValue = "20") int pageSize,
                                                              @PathVariable("storeId") String storeId,
-                                                             @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
+                                                             @RequestParam(defaultValue = "") String countryCode) throws IOException {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
@@ -463,14 +470,14 @@ public class StoreReportsController {
 
     @GetMapping(value = "/daily_top_products")
     public ResponseEntity<HttpResponse> dailyTopProducts(HttpServletRequest request,
-                                                          @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-                                                          @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
-                                                          @RequestParam(defaultValue = "date", required = false) String sortBy,
-                                                          @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
-                                                          @RequestParam(defaultValue = "0") int page,
-                                                          @RequestParam(defaultValue = "20") int pageSize,
-                                                          @PathVariable("storeId") String storeId,
-                                                          @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
+                                                         @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                                         @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                                         @RequestParam(defaultValue = "date", required = false) String sortBy,
+                                                         @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                                         @RequestParam(defaultValue = "0") int page,
+                                                         @RequestParam(defaultValue = "20") int pageSize,
+                                                         @PathVariable("storeId") String storeId,
+                                                         @RequestParam(defaultValue = "") String countryCode) throws IOException {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -497,7 +504,7 @@ public class StoreReportsController {
     @PostMapping(value = "/settlement", name = "store-report-settlement-post")
     public ResponseEntity<HttpResponse> settlement(HttpServletRequest request,
                                                    @PathVariable("storeId") String storeId,
-                                                   @RequestParam(defaultValue = "MYS") String countryCode) throws ParseException {
+                                                   @RequestParam(defaultValue = "") String countryCode) throws ParseException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         reportsGenerator.dailySalesScheduler();
@@ -511,7 +518,7 @@ public class StoreReportsController {
     public ResponseEntity<Object> totalSalesCount(HttpServletRequest request, @PathVariable("storeId") String storeId,
                                                   @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
                                                   @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
-                                                  @RequestParam(defaultValue = "MYS") String countryCode)
+                                                  @RequestParam(defaultValue = "") String countryCode)
             throws IOException {
         // TODO: not completed
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -617,7 +624,7 @@ public class StoreReportsController {
     public ResponseEntity<Object> weeklySale(HttpServletRequest request, @PathVariable("storeId") String storeId,
                                              @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
                                              @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
-                                             @RequestParam(defaultValue = "MYS") String countryCode)
+                                             @RequestParam(defaultValue = "") String countryCode)
             throws IOException {
         // TODO: not completed
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -660,7 +667,7 @@ public class StoreReportsController {
                                               @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
                                               @RequestParam(defaultValue = "created", required = false) String sortBy,
                                               @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
-                                              @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
+                                              @RequestParam(defaultValue = "") String countryCode) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
@@ -720,7 +727,7 @@ public class StoreReportsController {
                                                         @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
                                                         @RequestParam(defaultValue = "0") int page,
                                                         @RequestParam(defaultValue = "20") int pageSize,
-                                                        @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
+                                                        @RequestParam(defaultValue = "") String countryCode) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
@@ -757,7 +764,7 @@ public class StoreReportsController {
                                                       @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
                                                       @RequestParam(defaultValue = "0") int page,
                                                       @RequestParam(defaultValue = "20") int pageSize,
-                                                      @RequestParam(defaultValue = "MYS") String countryCode) throws IOException {
+                                                      @RequestParam(defaultValue = "") String countryCode) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
@@ -806,7 +813,8 @@ public class StoreReportsController {
             } else if (completionStatus != null) {
                 predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
             }
-            predicates.add(builder.equal(store.get("regionCountryId"),countryCode));
+            if (!countryCode.isEmpty())
+                predicates.add(builder.equal(store.get("regionCountryId"), countryCode));
 
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
@@ -826,7 +834,8 @@ public class StoreReportsController {
                 predicates.add(builder.greaterThanOrEqualTo(root.get("date"), from));
                 predicates.add(builder.lessThanOrEqualTo(root.get("date"), to));
             }
-            predicates.add(builder.equal(store.get("regionCountryId"),countryCode));
+            if (!countryCode.isEmpty())
+                predicates.add(builder.equal(store.get("regionCountryId"), countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
@@ -846,7 +855,8 @@ public class StoreReportsController {
             }
             predicates.add(builder.isNotNull(root.get("voucher")));
             predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
-            predicates.add(builder.equal(root.get("regionCountryId"), countryCode));
+            if (!countryCode.isEmpty())
+                predicates.add(builder.equal(root.get("regionCountryId"), countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
@@ -865,7 +875,8 @@ public class StoreReportsController {
                 predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
             }
             predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
-            predicates.add(builder.equal(root.get("regionCountryId"), countryCode));
+            if (!countryCode.isEmpty())
+                predicates.add(builder.equal(root.get("regionCountryId"), countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[0]));
@@ -902,7 +913,8 @@ public class StoreReportsController {
                 predicates.add(builder.greaterThanOrEqualTo(root.get("cycleStartDate"), from));
                 predicates.add(builder.lessThanOrEqualTo(root.get("cycleStartDate"), to));
             }
-            predicates.add(builder.equal(store.get("regionCountryId"),countryCode));
+            if (!countryCode.isEmpty())
+                predicates.add(builder.equal(store.get("regionCountryId"), countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
