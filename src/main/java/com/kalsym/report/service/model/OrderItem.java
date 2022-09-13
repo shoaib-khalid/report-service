@@ -1,5 +1,6 @@
 package com.kalsym.report.service.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -20,13 +21,20 @@ public class OrderItem {
     private String id;
 
     private String orderId;
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "productId")
-    private Product product;
+    private String productId;
     private Float price;
     private Float productPrice;
     private Float weight;
+    @JsonProperty("SKU")
     private String SKU;
     private int quantity;
     private String itemCode;
+    private String productName;
+    private String specialInstruction;
+    private String productVariant;
+    private String discountId;
+    private Float normalPrice;
+    private String discountLabel;
+    private String status;
+    private Integer originalQuantity;
 }

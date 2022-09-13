@@ -59,6 +59,7 @@ public class Response {
         public Float storeVoucherDiscount;
         public Float platformDiscount;
         public String voucherCode;
+        public Integer noOfOrderItem;
         
     }
 
