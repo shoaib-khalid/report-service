@@ -130,7 +130,7 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
                             <mainClass>
-                                    com.kalsym.report-service.ReportServiceApplication
+                                com.kalsym.report.service.ReportServiceApplication
                             </mainClass>
                         </manifest>
                     </archive>
