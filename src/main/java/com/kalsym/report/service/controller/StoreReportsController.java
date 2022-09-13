@@ -173,6 +173,13 @@ public class StoreReportsController {
                     String emptyValue = "";
                     sale.setVoucherCode(emptyValue);
                 }
+                if (order[18] != null) {
+                    String itemCount = order[17].toString();
+                    sale.setNoOfOrderItem(Integer.valueOf(itemCount));
+                } else {
+                    Integer emptyValue = 0;
+                    sale.setNoOfOrderItem(emptyValue);
+                }
                 sale.setOrderStatus(order[11].toString());
                 sale.setDeliveryStatus(order[12].toString());
                 reportResponseList.add(sale);

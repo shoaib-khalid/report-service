@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.kalsym</groupId>
     <artifactId>report-service</artifactId>
-    <version>3.4.8-Production</version>
+    <version>3.4.9-Production</version>
     <packaging>jar</packaging>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -130,7 +130,7 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
                             <mainClass>
-                                com.kalsym.report.service.ReportServiceApplication
+
                             </mainClass>
                         </manifest>
                     </archive>
