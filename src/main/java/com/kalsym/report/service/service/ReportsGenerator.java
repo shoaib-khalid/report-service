@@ -176,8 +176,9 @@ public class ReportsGenerator {
                     String settlementStoreCountryId = "";
                     if (storeOpt.isPresent()) {
 
-                        Store settlementStore = storeOpt.get();
-                        dailySalesStoreSettlement.setStore(settlementStore);
+                        Store settlementStore = storeRepository.getOne(storeId);
+//                        dailySalesStoreSettlement.setStore(settlementStore);
+                        dailySalesStoreSettlement.setStoreId(settlementStore.getId());
                         settlementStoreNameAbbreviation = settlementStore.getNameAbreviation();
                         settlementStoreCountryId = settlementStore.getRegionCountryStateId();
                         dailySalesStoreSettlement.setStoreName(settlementStore.getName());

@@ -1,6 +1,8 @@
 package com.kalsym.report.service.model.report;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.kalsym.report.service.model.SettlementStatus;
 import java.io.Serializable;
 import java.util.Date;
@@ -32,6 +34,8 @@ public class StoreSettlement implements Serializable {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Store store;
 
+    private String storeId;
+
     private String clientId;
     private String clientName;
     private String storeName;
@@ -55,5 +59,10 @@ public class StoreSettlement implements Serializable {
 
     private String settlementDate;
     private String referenceId;
+
+    public String toString() {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(this);
+    }
 
 }
