@@ -60,6 +60,8 @@ public class Response {
         public Float platformDiscount;
         public String voucherCode;
         public Integer noOfOrderItem;
+        public String serviceType;
+        public String channel;
         
     }
 

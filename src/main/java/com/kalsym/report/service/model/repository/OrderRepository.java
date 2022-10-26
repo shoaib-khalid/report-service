@@ -14,32 +14,84 @@ import java.util.List;
 public interface OrderRepository extends PagingAndSortingRepository<Order, String>, JpaRepository<Order, String>, JpaSpecificationExecutor<Order> {
 
 
-    @Query(value = "SELECT o.id, o.storeId, c.name AS clientName, c.username, s.name AS storeName, o.total, o.created, osd.receiverName AS customerName, o.klCommission, o.deliveryCharges," +
-            "o.storeServiceCharges, o.paymentStatus, o.completionStatus, o.subTotal ,o.appliedDiscount , o.deliveryDiscount , o.storeVoucherDiscount ,  v.voucherCode ," +
-            "(SELECT COUNT(*) FROM symplified.order_item oi WHERE oi.orderId = o.id ) as noOrderItem " +
-            "FROM symplified.`order` o LEFT JOIN symplified.voucher v ON o.storeVoucherId = v.id INNER JOIN symplified.store s INNER JOIN symplified.client c " +
-            "INNER JOIN symplified.order_shipment_detail osd ON o.storeId = s.id AND s.clientId = c.id AND o.id = osd.orderId" +
-            " WHERE (:storeId is null or o.storeId = :storeId) AND  o.created > :startDate AND o.created < :endDate AND o.paymentStatus = :status AND s.regionCountryId = :countryCode ORDER BY :sort :value", nativeQuery = true)
-    List<Object[]> findAllByStoreIdAndDateRangeAndPaymentStatusAndCountryCode(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("status") String status, @Param("sort") String sort, @Param("value") String value, @Param("countryCode") String regionCountryCode);
+    @Query(value = "SELECT o.id,  o.storeId,  c.name AS clientName, c.username, s.name AS storeName, o.total, o.created,  osd.receiverName AS customerName, " +
+            "   o.klCommission,   o.deliveryCharges,  o.storeServiceCharges, o.paymentStatus,   o.completionStatus,  o.subTotal,  o.appliedDiscount, " +
+            "   o.deliveryDiscount,   o.storeVoucherDiscount,   v.voucherCode, " +
+            "   o.serviceType,  o.channel, " +
+            "   (SELECT COUNT(*) FROM symplified.order_item oi WHERE oi.orderId = o.id ) as noOrderItem " +
+            "FROM symplified.`order` o " +
+            "LEFT JOIN symplified.voucher v ON o.storeVoucherId = v.id " +
+            "INNER JOIN symplified.store s INNER JOIN symplified.client c " +
+            "INNER JOIN symplified.order_shipment_detail osd ON o.storeId = s.id AND s.clientId = c.id AND o.id = osd.orderId " +
+            "WHERE  " +
+            "   (:storeId is null or o.storeId = :storeId) " +
+            "   AND  o.created > :startDate " +
+            "   AND (:type is null or o.serviceType = :type)" +
+            "   AND o.created < :endDate" +
+            "   AND ( (serviceType='DINEIN' AND o.completionStatus ='DELIVERED_TO_CUSTOMER' AND paymentStatus='PENDING') OR (serviceType='DELIVERIN' AND paymentStatus='PAID'))" +
+            "   AND s.regionCountryId = :countryCode " +
+            "   AND o.channel = :channel" +
+            "   ORDER BY :sort :value", nativeQuery = true)
+    List<Object[]> findAllByStoreIdAndDateRangeAndPaymentStatusAndCountryCode(@Param("storeId") String storeId, @Param("startDate") String startDate,
+                                                                              @Param("endDate") String endDate,
+                                                                              @Param("sort") String sort, @Param("value") String value,
+                                                                              @Param("countryCode") String regionCountryCode,
+                                                                              @Param("type") String serviceType, @Param("channel") String channel);
 
+
+    @Query(value = "SELECT " +
+            "   o.id, " +
+            "   o.storeId, " +
+            "   c.name AS clientName, " +
+            "   c.username, " +
+            "   s.name AS storeName, " +
+            "   o.total, " +
+            "   o.created," +
+            "   osd.receiverName AS customerName, " +
+            "   o.klCommission, " +
+            "   o.deliveryCharges, " +
+            "   o.storeServiceCharges, " +
+            "   o.paymentStatus," +
+            "   o.completionStatus, " +
+            "   o.subTotal ,  " +
+            "   o.appliedDiscount , " +
+            "   o.deliveryDiscount  , " +
+            "   o.storeVoucherDiscount , " +
+            "   v.voucherCode, " +
+            "   o.serviceType, " +
+            "   o.channel " +
+            "FROM symplified.`order` o  " +
+            "LEFT JOIN symplified.voucher v ON o.storeVoucherId = v.id " +
+            "INNER JOIN symplified.store s INNER JOIN symplified.client c " +
+            "INNER JOIN symplified.order_shipment_detail osd ON o.storeId = s.id AND s.clientId = c.id AND o.id = osd.orderId " +
+            "WHERE " +
+            "   o.created > :startDate" +
+            "   AND (:type = 'null' or o.serviceType = :type)" +
+            "   AND o.created < :endDate  " +
+            "   AND ( (serviceType='DINEIN' AND o.completionStatus ='DELIVERED_TO_CUSTOMER' AND paymentStatus='PENDING') OR (serviceType='DELIVERIN' AND paymentStatus='PAID'))" +
+            "   AND s.regionCountryId = :countryCode " +
+            "   AND o.channel = :channel" +
+            "   ORDER BY :sort :value", nativeQuery = true)
+    List<Object[]> findAllByDateRangeAndPaymentStatusAndCountryCode(@Param("startDate") String startDate, @Param("endDate") String endDate,
+                                                                    @Param("sort") String sort,
+                                                                    @Param("value") String value, @Param("countryCode") String countryCode,
+                                                                    @Param("type") String serviceType, @Param("channel") String channel);
 
     @Query(value = "SELECT o.id, o.storeId, c.name AS clientName, c.username, s.name AS storeName, o.total, o.created," +
             " osd.receiverName AS customerName, o.klCommission, o.deliveryCharges, o.storeServiceCharges, o.paymentStatus," +
-            " o.completionStatus, o.subTotal ,  o.appliedDiscount , o.deliveryDiscount  , o.storeVoucherDiscount , v.voucherCode " +
+            " o.completionStatus, o.subTotal ,  o.appliedDiscount , o.deliveryDiscount  , o.storeVoucherDiscount , v.voucherCode , " +
+            "   o.serviceType, " +
+            "   o.channel" +
             " FROM symplified.`order` o  LEFT JOIN symplified.voucher v ON o.storeVoucherId = v.id" +
             " INNER JOIN symplified.store s INNER JOIN symplified.client c" +
-            " INNER JOIN symplified.order_shipment_detail osd ON o.storeId = s.id AND s.clientId = c.id AND o.id = osd.orderId" +
-            " WHERE   o.created > :startDate AND o.created < :endDate AND o.paymentStatus = :status AND s.regionCountryId = :countryCode ORDER BY :sort :value", nativeQuery = true)
-    List<Object[]> findAllByDateRangeAndPaymentStatusAndCountryCode(@Param("startDate") String startDate, @Param("endDate") String endDate, @Param("status") String status, @Param("sort") String sort, @Param("value") String value, @Param("countryCode") String countryCode);
-
-    @Query(value = "SELECT o.id, o.storeId, c.name AS clientName, c.username, s.name AS storeName, o.total, o.created," +
-            " osd.receiverName AS customerName, o.klCommission, o.deliveryCharges, o.storeServiceCharges, o.paymentStatus," +
-            " o.completionStatus, o.subTotal ,  o.appliedDiscount , o.deliveryDiscount  , o.storeVoucherDiscount , v.voucherCode " +
-            " FROM symplified.`order` o  LEFT JOIN symplified.voucher v ON o.storeVoucherId = v.id" +
-            " INNER JOIN symplified.store s INNER JOIN symplified.client c" +
-            " INNER JOIN symplified.order_shipment_detail osd ON o.storeId = s.id AND s.clientId = c.id AND o.id = osd.orderId" +
-            " WHERE   o.created > :startDate AND o.created < :endDate AND o.paymentStatus = :status  ORDER BY :sort :value", nativeQuery = true)
-    List<Object[]> findAllByDateRangeAndPaymentStatus(@Param("startDate") String startDate, @Param("endDate") String endDate, @Param("status") String status, @Param("sort") String sort, @Param("value") String value);
+            " INNER JOIN symplified.order_shipment_detail osd ON o.storeId = s.id AND s.clientId = c.id AND o.id = osd.orderId " +
+            "WHERE   o.created > :startDate AND o.created < :endDate " +
+            "  AND (:type is null or o.serviceType = :type)" +
+            "  AND ( (serviceType='DINEIN' AND o.completionStatus ='DELIVERED_TO_CUSTOMER' AND paymentStatus='PENDING') OR (serviceType='DELIVERIN' AND paymentStatus='PAID'))" +
+            "  AND o.channel = :channel  ORDER BY :sort :value", nativeQuery = true)
+    List<Object[]> findAllByDateRangeAndPaymentStatus(@Param("startDate") String startDate, @Param("endDate") String endDate,
+                                                      @Param("sort") String sort, @Param("value") String value,
+                                                      @Param("type") String serviceType, @Param("channel") String channel);
 
     @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalSales " +
             "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId GROUP BY o.completionStatus", nativeQuery = true)

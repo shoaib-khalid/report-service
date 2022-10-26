@@ -74,7 +74,9 @@ public class StoreReportsController {
                                               @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                               @RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "20") int pageSize,
-                                              @RequestParam(defaultValue = "") String countryCode) {
+                                              @RequestParam(defaultValue = "") String countryCode,
+                                              @RequestParam(defaultValue = "") String serviceType,
+                                              @RequestParam(defaultValue = "") String channel) {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
 
@@ -97,15 +99,19 @@ public class StoreReportsController {
 
             if (!storeId.equals("null")) {
                 // System.err.println("START DATE : " + startDate + " END DATE : " + enDate);
-                orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatusAndCountryCode(storeId, stDate, enDate, "PAID",
-                        sortBy, sortingOrder, countryCode);
+                orders = orderRepository.findAllByStoreIdAndDateRangeAndPaymentStatusAndCountryCode(storeId, stDate, enDate,
+                        sortBy, sortingOrder, countryCode, serviceType, channel);
             } else {
                 if (!countryCode.isEmpty())
-                    orders = orderRepository.findAllByDateRangeAndPaymentStatusAndCountryCode(stDate, enDate, OrderStatus.PAID.name(),
-                            sortBy, sortingOrder, countryCode);
+//                    if (!serviceType.equals("null"))
+                        orders = orderRepository.findAllByDateRangeAndPaymentStatusAndCountryCode(stDate, enDate,
+                                sortBy, sortingOrder, countryCode, serviceType, channel);
+//                    else
+//                        orders = orderRepository.findAllByDateRangeAndPaymentStatusAndCountryCode(stDate, enDate,
+//                                sortBy, sortingOrder, countryCode, null, channel);
                 else
-                    orders = orderRepository.findAllByDateRangeAndPaymentStatus(stDate, enDate, OrderStatus.PAID.name(),
-                            sortBy, sortingOrder);
+                    orders = orderRepository.findAllByDateRangeAndPaymentStatus(stDate, enDate,
+                            sortBy, sortingOrder, serviceType, channel);
             }
             System.out.println("orders.size() : " + orders.size());
             for (Object[] order : orders) {
@@ -116,7 +122,13 @@ public class StoreReportsController {
                 sale.setStoreName(order[4].toString());
                 String total = order[5].toString();
                 sale.setTotal(Float.parseFloat(total));
-                sale.setCustomerName(order[7].toString());
+                if (order[7] != null) {
+                    String customerName = order[7].toString();
+                    sale.setCustomerName(customerName);
+                } else {
+                    String emptyValue = "";
+                    sale.setCustomerName(emptyValue);
+                }
                 if (order[8] != null) {
                     String commission = order[8].toString();
                     sale.setCommission(Float.parseFloat(commission));
@@ -173,12 +185,26 @@ public class StoreReportsController {
                     String emptyValue = "";
                     sale.setVoucherCode(emptyValue);
                 }
+//                if (order[20] != null) {
+//                    String itemCount = order[21].toString();
+//                    sale.setNoOfOrderItem(Integer.valueOf(itemCount));
+//                } else {
+//                    Integer emptyValue = 0;
+//                    sale.setNoOfOrderItem(emptyValue);
+//                }
                 if (order[18] != null) {
-                    String itemCount = order[17].toString();
-                    sale.setNoOfOrderItem(Integer.valueOf(itemCount));
+                    String type = order[18].toString();
+                    sale.setServiceType(type);
                 } else {
-                    Integer emptyValue = 0;
-                    sale.setNoOfOrderItem(emptyValue);
+                    String emptyValue = "";
+                    sale.setServiceType(emptyValue);
+                }
+                if (order[19] != null) {
+                    String channelType = order[19].toString();
+                    sale.setChannel(channelType);
+                } else {
+                    String emptyValue = "";
+                    sale.setChannel(emptyValue);
                 }
                 sale.setOrderStatus(order[11].toString());
                 sale.setDeliveryStatus(order[12].toString());
@@ -213,6 +239,7 @@ public class StoreReportsController {
                                                            @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                            @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
                                                            @PathVariable("storeId") String storeId,
+                                                           @RequestParam(required = false, defaultValue = "DELIVERIN") String serviceType,
                                                            @RequestParam(defaultValue = "created", required = false) String sortBy,
                                                            @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                            @RequestParam(defaultValue = "0") int page,
@@ -225,11 +252,13 @@ public class StoreReportsController {
             Store store = storeRepository.getOne(storeId);
             orderMatch.setStore(store);
         }
+        orderMatch.setServiceType(serviceType);
 
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
                 .withIgnoreNullValues()
+                .withMatcher("serviceType", new ExampleMatcher.GenericPropertyMatcher().exact())
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<Order> orderExample = Example.of(orderMatch, matcher);
 
@@ -377,6 +406,7 @@ public class StoreReportsController {
         } else {
             sortBy = "cycleEndDate";
         }
+
 
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
