@@ -456,7 +456,7 @@ public class StoreReportsController {
 
         StoreDailySale example = new StoreDailySale();
 
-        if (storeId != null && !storeId.isEmpty()) {
+        if (!storeId.equals("null") && !storeId.isEmpty()) {
             Store store = storeRepository.getOne(storeId);
             example.setStoreId(store.getId());
         }
@@ -472,22 +472,20 @@ public class StoreReportsController {
         Page<StoreDailySale> storeDailySale = storeDailySalesRepository
                 .findAll(getStoreDailySaleSpec(from, to, orderExample, countryCode, serviceType, channel), pageable);
 
-
+//
 //        Pageable pageable = null;
 //        if (sortingOrder.equalsIgnoreCase("desc")) {
 //            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
 //        } else {
 //            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
 //        }
-//        Logger.application.info("pageable: " + pageable, "");
-//
 //        response.setSuccessStatus(HttpStatus.OK);
 //        Logger.application.info("StoreId: " + storeId, "");
-//
-//        Page<StoreDailySale> storeDailySales = storeSettlementsRepository
-//                .findAll(getStoreSettlementsSpec(startDate, endDate, example, countryCode), pageable);
-//
-//
+////
+////        Page<StoreDailySale> storeDailySales = storeSettlementsRepository
+////                .findAll(getStoreSettlementsSpec(startDate, endDate, example, countryCode), pageable);
+////
+////
 //        if (!storeId.equals("null")) {
 //            response.setData(storeDailySalesRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
 //        } else {
@@ -1008,7 +1006,7 @@ public class StoreReportsController {
             Join<StoreSettlement, Store> store = root.join("store");
 
             if (from != null && to != null) {
-                to.setDate(to.getDate() + 1);
+                // to.setDate(to.getDate() + 1);
                 predicates.add(builder.greaterThanOrEqualTo(root.get("date"), from));
                 predicates.add(builder.lessThanOrEqualTo(root.get("date"), to));
             }
@@ -1024,9 +1022,9 @@ public class StoreReportsController {
             } else if (channel.equals("PAYHUB2U")) {
                 predicates.add(builder.equal(root.get("channel"), "PAYHUB2U"));
             }
-//            predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
+
             if (!countryCode.isEmpty())
-                predicates.add(builder.equal(root.get("regionCountryId"), countryCode));
+                predicates.add(builder.equal(store.get("regionCountryId"), countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
