@@ -30,7 +30,7 @@ public interface StoreDailySalesRepository extends PagingAndSortingRepository<St
     List<StoreDailySale> findByDateBetween(Date from, Date to);
 
 
-    @Procedure("insertDailySales")
+    @Procedure("inserDailySales")
     void insertDailySales();
 
     @Procedure("insertProductDailySales")

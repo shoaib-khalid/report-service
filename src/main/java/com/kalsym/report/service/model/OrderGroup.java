@@ -71,6 +71,10 @@ public class OrderGroup implements Serializable {
     @Transient
     private String shipmentName;
 
+    private String serviceType;
+
+    private String channel;
+
 /*
     @Transient
 */

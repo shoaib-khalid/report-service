@@ -20,7 +20,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Getter
 @Setter
 @ToString
-@Table(name = "store_settlement")
+@Table(name = "store_settlement2")
 public class StoreSettlement implements Serializable {
 
     @Id
@@ -50,6 +50,7 @@ public class StoreSettlement implements Serializable {
     private Double totalRefund;
     private Double totalStoreShare;
 
+
     @Column(columnDefinition = "enum('PAID', 'AVAILABLE', 'RUNNING')")
     @Enumerated(EnumType.STRING)
     private SettlementStatus settlementStatus;
@@ -59,6 +60,8 @@ public class StoreSettlement implements Serializable {
 
     private String settlementDate;
     private String referenceId;
+    private String serviceType;
+    private String channel;
 
     public String toString() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();

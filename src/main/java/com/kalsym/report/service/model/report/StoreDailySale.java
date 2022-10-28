@@ -15,7 +15,7 @@ import java.util.Date;
 @Setter
 @IdClass(StoreDailySaleIdentity.class)
 @ToString
-@Table(name = "store_daily_sale")
+@Table(name = "store_daily_sale2")
 public class StoreDailySale implements Serializable {
 
     @Id
@@ -35,6 +35,8 @@ public class StoreDailySale implements Serializable {
     private Double totalSelfDeliveryFee;
     private Double totalAppliedDiscount;
     private Double totalDeliveryDiscount;
+    private String serviceType;
+    private String channel;
     //    @OneToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "storeId", insertable = false, updatable = false)
 //    @Fetch(FetchMode.JOIN)

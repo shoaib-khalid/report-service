@@ -134,6 +134,8 @@ public class ReportsGenerator {
                     dailySalesStoreSettlement.setTotalCommisionFee(dailySalesStoreSettlement.getTotalCommisionFee() + dailySale.getCommision());
                     dailySalesStoreSettlement.setTotalStoreShare(dailySalesStoreSettlement.getTotalStoreShare() + dailySale.getAmountEarned());
                     dailySalesStoreSettlement.setSettlementStatus(status);
+                    dailySalesStoreSettlement.setServiceType(dailySale.getServiceType());
+                    dailySalesStoreSettlement.setChannel(dailySale.getChannel());
                     dailySalesStoreSettlement.setTotalTransactionValue(dailySalesStoreSettlement.getTotalTransactionValue() + dailySale.getTotalAmount());
                     dailySalesStoreSettlement.setReferenceId(dailySalesStoreSettlement.getReferenceId());
                     dailySalesStoreSettlement.setTotalServiceFee(dailySalesStoreSettlement.getTotalServiceFee() + dailySale.getTotalServiceCharge());
@@ -163,7 +165,8 @@ public class ReportsGenerator {
                     dailySalesStoreSettlement.setSettlementDate(settlement);
                     dailySalesStoreSettlement.setTotalServiceFee(dailySale.getTotalServiceCharge());
                     dailySalesStoreSettlement.setTotalDeliveryFee(dailySale.getTotalDeliveryFee());
-
+                    dailySalesStoreSettlement.setServiceType(dailySale.getServiceType());
+                    dailySalesStoreSettlement.setChannel(dailySale.getChannel());
                     dailySalesStoreSettlement.setTotalSelfDeliveryFee(dailySale.getTotalSelfDeliveryFee());
                     dailySalesStoreSettlement.setTotalAppliedDiscount(dailySale.getTotalAppliedDiscount());
                     dailySalesStoreSettlement.setTotalDeliveryDiscount(dailySale.getTotalDeliveryDiscount());
