@@ -104,14 +104,17 @@ public class StoreReportsController {
             } else {
                 if (!countryCode.isEmpty())
 //                    if (!serviceType.equals("null"))
-                        orders = orderRepository.findAllByDateRangeAndPaymentStatusAndCountryCode(stDate, enDate,
-                                sortBy, sortingOrder, countryCode, serviceType, channel);
+                    orders = orderRepository.findAllByDateRangeAndPaymentStatusAndCountryCode(stDate, enDate,
+                            sortBy, sortingOrder, countryCode, serviceType, channel);
 //                    else
 //                        orders = orderRepository.findAllByDateRangeAndPaymentStatusAndCountryCode(stDate, enDate,
 //                                sortBy, sortingOrder, countryCode, null, channel);
+                else if (!channel.isEmpty())
+                    orders = orderRepository.findAllByDateRangeAndPaymentStatusAndChannel(stDate, enDate,
+                            sortBy, sortingOrder, serviceType, channel);
                 else
                     orders = orderRepository.findAllByDateRangeAndPaymentStatus(stDate, enDate,
-                            sortBy, sortingOrder, serviceType, channel);
+                            sortBy, sortingOrder, serviceType);
             }
             System.out.println("orders.size() : " + orders.size());
             for (Object[] order : orders) {
@@ -438,7 +441,10 @@ public class StoreReportsController {
                                                     @RequestParam(defaultValue = "0") int page,
                                                     @RequestParam(defaultValue = "20") int pageSize,
                                                     @PathVariable("storeId") String storeId,
-                                                    @RequestParam(defaultValue = "") String countryCode) throws IOException {
+                                                    @RequestParam(defaultValue = "") String countryCode,
+                                                    @RequestParam(defaultValue = "") String serviceType,
+                                                    @RequestParam(defaultValue = "") String channel
+    ) throws IOException {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
@@ -447,23 +453,48 @@ public class StoreReportsController {
         Logger.application.info("from: " + from.toString(), "");
         Logger.application.info("to: " + to.toString(), "");
 
-        Pageable pageable = null;
-        if (sortingOrder.equalsIgnoreCase("desc")) {
-            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-        } else {
-            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
-        }
-        Logger.application.info("pageable: " + pageable, "");
 
-        response.setSuccessStatus(HttpStatus.OK);
-        Logger.application.info("StoreId: " + storeId, "");
+        StoreDailySale example = new StoreDailySale();
 
-        if (!storeId.equals("null")) {
-            response.setData(storeDailySalesRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
-        } else {
-            response.setData(storeDailySalesRepository.findByDateBetween(from, to, pageable));
+        if (storeId != null && !storeId.isEmpty()) {
+            Store store = storeRepository.getOne(storeId);
+            example.setStoreId(store.getId());
         }
-        return ResponseEntity.status(response.getStatus()).body(response);
+
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<StoreDailySale> orderExample = Example.of(example, matcher);
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("date").descending());
+        Page<StoreDailySale> storeDailySale = storeDailySalesRepository
+                .findAll(getStoreDailySaleSpec(from, to, orderExample, countryCode, serviceType, channel), pageable);
+
+
+//        Pageable pageable = null;
+//        if (sortingOrder.equalsIgnoreCase("desc")) {
+//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+//        } else {
+//            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+//        }
+//        Logger.application.info("pageable: " + pageable, "");
+//
+//        response.setSuccessStatus(HttpStatus.OK);
+//        Logger.application.info("StoreId: " + storeId, "");
+//
+//        Page<StoreDailySale> storeDailySales = storeSettlementsRepository
+//                .findAll(getStoreSettlementsSpec(startDate, endDate, example, countryCode), pageable);
+//
+//
+//        if (!storeId.equals("null")) {
+//            response.setData(storeDailySalesRepository.findByStoreIdAndDateBetween(storeId, from, to, pageable));
+//        } else {
+//            response.setData(storeDailySalesRepository.findByDateBetween(from, to, pageable));
+//        }
+        response.setData(storeDailySale);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/merchant_daily_sales", name = "store-report-settlement-get")
@@ -801,7 +832,8 @@ public class StoreReportsController {
                                                       @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
                                                       @RequestParam(defaultValue = "0") int page,
                                                       @RequestParam(defaultValue = "20") int pageSize,
-                                                      @RequestParam(defaultValue = "") String countryCode) throws IOException {
+                                                      @RequestParam(defaultValue = "") String countryCode,
+                                                      @RequestParam(defaultValue = "") String serviceType) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
@@ -823,7 +855,7 @@ public class StoreReportsController {
             pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
         }
         Page<OrderGroup> products = orderGroupRepository
-                .findAll(getSpecGroupOrderListDailySaleWithDatesBetween(from, to, example, countryCode), pageable);
+                .findAll(getSpecGroupOrderListDailySaleWithDatesBetween(from, to, example, countryCode, serviceType), pageable);
 
         response.setData(products);
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -901,22 +933,33 @@ public class StoreReportsController {
     }
 
     public Specification<OrderGroup> getSpecGroupOrderListDailySaleWithDatesBetween(
-            Date from, Date to, Example<OrderGroup> example, String countryCode) {
+            Date from, Date to, Example<OrderGroup> example, String countryCode, String serviceType) {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
+            Join<OrderGroup, Order> order = root.join("orderList");
+
 
             if (from != null && to != null) {
                 to.setDate(to.getDate() + 1);
                 predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
                 predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
             }
-            predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
+
+            if (serviceType.equals("DINEIN")) {
+                predicates.add(builder.equal(root.get("serviceType"), "DINEIN"));
+                predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
+                predicates.add(builder.equal(order.get("completionStatus"), "DELIVERED_TO_CUSTOMER"));
+            } else if (serviceType.equals("DELIVERIN")) {
+                predicates.add(builder.equal(root.get("serviceType"), "DELIVERIN"));
+                predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
+            }
+//            predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
             if (!countryCode.isEmpty())
                 predicates.add(builder.equal(root.get("regionCountryId"), countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
-            return builder.and(predicates.toArray(new Predicate[0]));
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
 
@@ -952,6 +995,38 @@ public class StoreReportsController {
             }
             if (!countryCode.isEmpty())
                 predicates.add(builder.equal(store.get("regionCountryId"), countryCode));
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+    public static Specification<StoreDailySale> getStoreDailySaleSpec(
+            Date from, Date to, Example<StoreDailySale> example, String countryCode, String serviceType, String channel) {
+        return (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+            Join<StoreSettlement, Store> store = root.join("store");
+
+            if (from != null && to != null) {
+                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(root.get("date"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("date"), to));
+            }
+
+            if (serviceType.equals("DINEIN")) {
+                predicates.add(builder.equal(root.get("serviceType"), "DINEIN"));
+            } else if (serviceType.equals("DELIVERIN")) {
+                predicates.add(builder.equal(root.get("serviceType"), "DELIVERIN"));
+            }
+
+            if (channel.equals("DELIVERIN")) {
+                predicates.add(builder.equal(root.get("channel"), "DELIVERIN"));
+            } else if (channel.equals("PAYHUB2U")) {
+                predicates.add(builder.equal(root.get("channel"), "PAYHUB2U"));
+            }
+//            predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
+            if (!countryCode.isEmpty())
+                predicates.add(builder.equal(root.get("regionCountryId"), countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
