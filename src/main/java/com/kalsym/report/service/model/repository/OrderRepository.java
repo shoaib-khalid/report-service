@@ -90,8 +90,9 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
             "  AND ( (serviceType='DINEIN' AND o.completionStatus ='DELIVERED_TO_CUSTOMER' AND paymentStatus='PENDING') OR (serviceType='DELIVERIN' AND paymentStatus='PAID'))" +
             "  AND o.channel = :channel  ORDER BY :sort :value", nativeQuery = true)
     List<Object[]> findAllByDateRangeAndPaymentStatusAndChannel(@Param("startDate") String startDate, @Param("endDate") String endDate,
-                                                      @Param("sort") String sort, @Param("value") String value,
-                                                      @Param("type") String serviceType, @Param("channel") String channel);
+                                                                @Param("sort") String sort, @Param("value") String value,
+                                                                @Param("type") String serviceType, @Param("channel") String channel);
+
     @Query(value = "SELECT o.id, o.storeId, c.name AS clientName, c.username, s.name AS storeName, o.total, o.created," +
             " osd.receiverName AS customerName, o.klCommission, o.deliveryCharges, o.storeServiceCharges, o.paymentStatus," +
             " o.completionStatus, o.subTotal ,  o.appliedDiscount , o.deliveryDiscount  , o.storeVoucherDiscount , v.voucherCode , " +
@@ -109,8 +110,8 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
                                                       @Param("type") String serviceType);
 
     @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalSales " +
-            "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId GROUP BY o.completionStatus", nativeQuery = true)
-    List<Object[]> fineAllByStatusAndDateRange(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
+            "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId AND o.serviceType = :serviceType  GROUP BY o.completionStatus", nativeQuery = true)
+    List<Object[]> fineAllByStatusAndDateRange(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("serviceType") String serviceType);
 
 
     @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalSales , DATE(created) " +

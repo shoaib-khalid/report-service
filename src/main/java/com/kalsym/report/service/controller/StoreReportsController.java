@@ -585,7 +585,8 @@ public class StoreReportsController {
     public ResponseEntity<Object> totalSalesCount(HttpServletRequest request, @PathVariable("storeId") String storeId,
                                                   @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
                                                   @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
-                                                  @RequestParam(defaultValue = "") String countryCode)
+                                                  @RequestParam(defaultValue = "") String countryCode,
+                                                  @RequestParam(defaultValue = "DELIVERIN") String serviceType)
             throws IOException {
         // TODO: not completed
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -603,7 +604,7 @@ public class StoreReportsController {
 
         String todayEndDate = simpleDateFormat.format(endDate);
 
-        List<Object[]> dailyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, todayDate, todayEndDate);
+        List<Object[]> dailyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, todayDate, todayEndDate, serviceType);
         Set<OrderCount> todaySales = new HashSet<>();
 
         for (Object[] element : dailyOrder) {
@@ -623,9 +624,10 @@ public class StoreReportsController {
         Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
         Logger.application.info("First week  : " + simpleDateFormat.format(firstDayOfWeek));
         Logger.application.info("last week  : " + simpleDateFormat.format(lastDayOfWeek));
+        Logger.application.info("Service Type  : " + serviceType);
 
         List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId,
-                simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek));
+                simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek), serviceType);
         Set<OrderCount> weeklySales = new HashSet<>();
 
         for (Object[] item : weeklyOrder) {
@@ -646,7 +648,7 @@ public class StoreReportsController {
         Logger.application.info("First Month  : " + firstDayOfMonth);
         Logger.application.info("Second Month : " + lastDayOfMonth);
         List<Object[]> monthlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId,
-                simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth));
+                simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth), serviceType);
         Set<OrderCount> monthlySales = new HashSet<>();
 
         for (Object[] value : monthlyOrder) {
@@ -664,7 +666,7 @@ public class StoreReportsController {
         Logger.application.info("First Month  : " + firstDayOfMonth);
         Logger.application.info("Second Month : " + lastDayOfMonth);
         List<Object[]> yearlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId,
-                simpleDateFormat.format(firstDayOfYear), todayEndDate);
+                simpleDateFormat.format(firstDayOfYear), todayEndDate, serviceType);
         Set<OrderCount> yearlyOrders = new HashSet<>();
 
         for (Object[] value : yearlyOrder) {
@@ -691,7 +693,7 @@ public class StoreReportsController {
     public ResponseEntity<Object> weeklySale(HttpServletRequest request, @PathVariable("storeId") String storeId,
                                              @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
                                              @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
-                                             @RequestParam(defaultValue = "") String countryCode)
+                                             @RequestParam(defaultValue = "") String countryCode, @RequestParam(defaultValue = "DELIVERIN") String serviceType)
             throws IOException {
         // TODO: not completed
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -709,7 +711,7 @@ public class StoreReportsController {
         Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
 
         List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(from),
-                simpleDateFormat.format(to));
+                simpleDateFormat.format(to), serviceType);
         Set<OrderCount> weeklySales = new HashSet<>();
 
         for (Object[] item : weeklyOrder) {
