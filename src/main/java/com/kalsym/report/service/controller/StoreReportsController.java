@@ -791,6 +791,7 @@ public class StoreReportsController {
 
     @GetMapping(value = "/voucherOrderGroupList", name = "group-order-with-voucher-list")
     public ResponseEntity<Object> voucherOrderGroupList(HttpServletRequest request,
+                                                        @PathVariable("storeId") String storeId,
                                                         @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
                                                         @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
                                                         @RequestParam(defaultValue = "created", required = false) String sortBy,
@@ -832,6 +833,7 @@ public class StoreReportsController {
                                                       @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
                                                       @RequestParam(defaultValue = "created", required = false) String sortBy,
                                                       @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                                      @PathVariable("storeId") String storeId,
                                                       @RequestParam(defaultValue = "0") int page,
                                                       @RequestParam(defaultValue = "20") int pageSize,
                                                       @RequestParam(defaultValue = "") String countryCode,
@@ -942,7 +944,6 @@ public class StoreReportsController {
             final List<Predicate> predicates = new ArrayList<>();
             Join<OrderGroup, Order> order = root.join("orderList");
 
-
             if (from != null && to != null) {
                 to.setDate(to.getDate() + 1);
                 predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
@@ -967,6 +968,7 @@ public class StoreReportsController {
             if (!countryCode.isEmpty())
                 predicates.add(builder.equal(root.get("regionCountryId"), countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+            query.distinct(true);
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
