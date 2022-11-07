@@ -1,3 +1,51 @@
+
+##################################################
+# Version v.3.4.14- Production | 07-NOV-2022
+##################################################
+### Code Changes:
+
+1. Update merchant daily top products
+
+Product_daily_sale- table
+ALTER TABLE symplified.product_daily_sale ADD serviceType ENUM('DINEIN','DELIVERIN') DEFAULT 'DELIVERIN' NOT NULL;
+
+
+CREATE DEFINER=`root`@`%` PROCEDURE `symplified`.`insertProductDailySales`()
+BEGIN
+
+		INSERT INTO product_daily_sale(`date`, productId, totalOrders,serviceType)
+		SELECT
+			DATE(o.created),
+			oi.productId,
+			COUNT(o.id),
+			o.serviceType
+		FROM
+			`order` o
+		INNER JOIN order_item oi ON
+			o.id = oi.orderId
+		WHERE
+			o.storeId IS NOT NULL
+			AND o.created IS NOT NULL
+			AND oi.productId IS NOT NULL
+		    AND  (o.serviceType='DINEIN' AND o.completionStatus ='DELIVERED_TO_CUSTOMER' AND o.paymentStatus ='PENDING') OR ( o.serviceType='DELIVERIN'AND 1<=(SELECT COUNT(*) FROM order_payment_status_update opsu WHERE opsu.status='PAID' AND o.completionStatus != "CANCELED_BY_MERCHANT" AND opsu.orderId=o.id))
+			AND o.completionStatus NOT IN ('CANCELED_BY_MERCHANT', 'CANCELED_BY_CUSTOMER')
+		GROUP BY
+			DATE(o.created),
+			oi.productId ,
+			o.serviceType 
+		ON DUPLICATE KEY UPDATE
+		productId=productId;
+		
+		UPDATE product_daily_sale pds
+		SET pds.storeId=(SELECT p.storeId FROM product p WHERE p.id=pds.productId), `name`=(SELECT p.name FROM product p WHERE p.id=pds.productId);
+		
+		UPDATE product_daily_sale r
+		SET r.ranking =(SELECT ranking FROM (SELECT a.`date`, a.productId,a.totalOrders, a.storeId, ROW_NUMBER() OVER(PARTITION BY a.`date` ,a.storeId ORDER by a.totalOrders desc  )as ranking
+		FROM symplified.product_daily_sale a ORDER by a.`date`  ,ranking ASC ) list WHERE list.productId = r.productId and list.`date` = r.`date`);
+	END
+
+
+
 ##################################################
 # Version v.3.4.13- Production | 28-OCT-2022
 ##################################################

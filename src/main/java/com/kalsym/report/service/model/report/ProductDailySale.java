@@ -45,4 +45,6 @@ public class ProductDailySale implements Serializable {
 
     Long ranking;
 
+    private String serviceType;
+
 }

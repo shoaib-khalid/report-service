@@ -341,7 +341,7 @@ public class StoreReportsController {
                                                                  @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                                  @RequestParam(defaultValue = "0") int page,
                                                                  @RequestParam(defaultValue = "20") int pageSize, @PathVariable("storeId") String storeId,
-                                                                 @RequestParam(defaultValue = "") String countryCode) throws Exception {
+                                                                 @RequestParam(defaultValue = "") String countryCode, @RequestParam(defaultValue = "") String serviceType) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -366,7 +366,7 @@ public class StoreReportsController {
             pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending().and(Sort.by("ranking").ascending()));
         }
         Page<ProductDailySale> products = productDailySalesRepository
-                .findAll(getSpecDailySaleWithDatesBetween(startDate, endDate, example, countryCode), pageable);
+                .findAll(getSpecDailySaleWithDatesBetween(startDate, endDate, example, countryCode, serviceType), pageable);
 
         response.setData(products);
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -897,7 +897,7 @@ public class StoreReportsController {
     }
 
     public Specification<ProductDailySale> getSpecDailySaleWithDatesBetween(
-            Date from, Date to, Example<ProductDailySale> example, String countryCode) {
+            Date from, Date to, Example<ProductDailySale> example, String countryCode, String serviceType) {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
@@ -907,6 +907,9 @@ public class StoreReportsController {
                 to.setDate(to.getDate() + 1);
                 predicates.add(builder.greaterThanOrEqualTo(root.get("date"), from));
                 predicates.add(builder.lessThanOrEqualTo(root.get("date"), to));
+            }
+            if (!serviceType.equals("")) {
+                predicates.add(builder.equal(root.get("serviceType"), serviceType));
             }
             if (!countryCode.isEmpty())
                 predicates.add(builder.equal(store.get("regionCountryId"), countryCode));
