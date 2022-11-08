@@ -116,7 +116,13 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
 
     @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalSales , DATE(created) " +
             "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId  AND o.serviceType = :serviceType GROUP BY o.completionStatus, DATE(created) ORDER BY  DATE(created) ASC", nativeQuery = true)
-    List<Object[]> fineAllByStatusAndDateRangeAndGroup(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("serviceType") String serviceType);
+    List<Object[]> fineAllByStatusAndDateRangeAndGroupAndServiceType(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("serviceType") String serviceType);
+
+
+    @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalSales , DATE(created) " +
+            "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId  GROUP BY o.completionStatus, DATE(created) ORDER BY  DATE(created) ASC", nativeQuery = true)
+    List<Object[]> fineAllByStatusAndDateRangeAndGroup(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
+
 
 
 }

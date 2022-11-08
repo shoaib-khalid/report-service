@@ -737,7 +737,7 @@ public class StoreReportsController {
                                               @RequestParam(defaultValue = "created", required = false) String sortBy,
                                               @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
                                               @RequestParam(defaultValue = "") String countryCode,
-                                              @RequestParam(defaultValue = "DELIVERIN") String serviceType) throws IOException {
+                                              @RequestParam(defaultValue = "") String serviceType) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logPrefix = request.getRequestURI();
         DashboardViewTotal viewTotal = new DashboardViewTotal();
@@ -752,9 +752,14 @@ public class StoreReportsController {
         Date lastDayOfWeek = to;
 
         Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
-
-        List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRangeAndGroup(storeId,
-                simpleDateFormat.format(from), simpleDateFormat.format(to), serviceType);
+        Logger.application.info("Service TYPE   : " + serviceType.isEmpty());
+        List<Object[]> weeklyOrder;
+        if (!serviceType.isEmpty())
+            weeklyOrder = orderRepository.fineAllByStatusAndDateRangeAndGroupAndServiceType(storeId,
+                    simpleDateFormat.format(from), simpleDateFormat.format(to), serviceType);
+        else
+            weeklyOrder = orderRepository.fineAllByStatusAndDateRangeAndGroup(storeId,
+                    simpleDateFormat.format(from), simpleDateFormat.format(to));
         // List<OrderCount> weeklySales = new HashSet<>();
         List<OrderCount> weeklySales = new ArrayList<>();
 
