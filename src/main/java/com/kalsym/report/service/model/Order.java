@@ -66,4 +66,15 @@ public class Order implements Serializable {
     private Date created;
 
     private String serviceType;
+
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staffId" )
+    @NotFound(action = NotFoundAction.IGNORE)
+    private StoreUser staff;
+
+
+    private String paymentType;
+
+    private String paymentChannel;
 }
