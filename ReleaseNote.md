@@ -1,5 +1,14 @@
 
 ##################################################
+# Version v.3.5.0- Production | 04-Jan-2023
+##################################################
+### Code Changes:
+
+1. Added New Api For Staff report
+2. Added New field for merchant daily detailed sale
+
+
+##################################################
 # Version v.3.4.14- Production | 07-NOV-2022
 ##################################################
 ### Code Changes:

@@ -64,6 +64,9 @@ public class StoreReportsController {
     @Autowired
     OrderGroupRepository orderGroupRepository;
 
+    @Autowired
+    StoreUsersRepository storeUsersRepository;
+
 
     @GetMapping(value = "/report/detailedDailySales", name = "store-detail-report-sale-get")
     public ResponseEntity<HttpResponse> sales(HttpServletRequest request,
@@ -870,7 +873,45 @@ public class StoreReportsController {
         response.setData(products);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+// STAFF SALES REPORT
 
+    @GetMapping(value = "/report/staff", name = "staff-sales-report-list")
+    public ResponseEntity<Object> staffReport(HttpServletRequest request,
+                                                      @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                                      @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                                      @RequestParam(defaultValue = "created", required = false) String sortBy,
+                                                      @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                                      @PathVariable("storeId") String storeId,
+                                                      @RequestParam(defaultValue = "0") int page,
+                                                      @RequestParam(defaultValue = "20") int pageSize,
+                                                      @RequestParam(defaultValue = "") String countryCode,
+                                                      @RequestParam(defaultValue = "") String serviceType,
+                                                      @RequestParam(defaultValue = "") String channel) throws IOException {
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        StoreUser storeUser = new StoreUser();
+        storeUser.setStoreId(storeId);
+
+
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<StoreUser> example = Example.of(storeUser, matcher);
+
+        Pageable pageable = null;
+        if (sortingOrder.equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        } else {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+        }
+        Page<StoreUser> products = storeUsersRepository
+                .findAll(getSpecStaffReportSaleWithDatesBetween(from, to, example), pageable);
+
+        response.setData(products);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
     public Specification<Order> getSpecWithDatesBetween(
             Date from, Date to, OrderStatus completionStatus, Example<Order> example, String countryCode) {
 
@@ -885,7 +926,7 @@ public class StoreReportsController {
             }
             if (completionStatus == OrderStatus.PAID) {
                 Predicate predicateForOnlinePayment = builder.equal(root.get("paymentStatus"), "PAID");
-                Predicate predicateForCompletionStatus = builder.equal(root.get("paymentStatus"), "PAID");
+                Predicate predicateForCompletionStatus = builder.equal(root.get("paymentStatus"), "PENDING");
                 Predicate predicateForCOD = builder.and(predicateForCompletionStatus);
                 Predicate finalPredicate = builder.or(predicateForOnlinePayment, predicateForCOD);
                 predicates.add(finalPredicate);
@@ -1054,6 +1095,28 @@ public class StoreReportsController {
             if (!countryCode.isEmpty())
                 predicates.add(builder.equal(store.get("regionCountryId"), countryCode));
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+
+
+    public Specification<StoreUser> getSpecStaffReportSaleWithDatesBetween(
+            Date from, Date to, Example<StoreUser> example) {
+
+        return (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+            Join<StoreUser, StoreShiftSummary> storeShiftSummary = root.join("shiftSummaries");
+
+            if (from != null && to != null) {
+                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(storeShiftSummary.get("created"), from));
+                predicates.add(builder.lessThanOrEqualTo(storeShiftSummary.get("created"), to));
+            }
+
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+            query.distinct(true);
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
