@@ -1,5 +1,6 @@
 package com.kalsym.report.service.controller;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.kalsym.report.service.ReportServiceApplication;
 import com.kalsym.report.service.model.*;
 import com.kalsym.report.service.model.report.ProductDailySale;
@@ -11,6 +12,7 @@ import com.kalsym.report.service.service.enums.OrderStatus;
 import com.kalsym.report.service.utils.HttpResponse;
 import com.kalsym.report.service.utils.Logger;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -245,7 +247,7 @@ public class StoreReportsController {
                                                            @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                            @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
                                                            @PathVariable("storeId") String storeId,
-                                                           @RequestParam(required = false, defaultValue = "DELIVERIN") String serviceType,
+                                                           @RequestParam(required = false, defaultValue = "") String serviceType,
                                                            @RequestParam(defaultValue = "created", required = false) String sortBy,
                                                            @RequestParam(defaultValue = "DESC", required = false) String sortingOrder,
                                                            @RequestParam(defaultValue = "0") int page,
@@ -258,8 +260,8 @@ public class StoreReportsController {
             Store store = storeRepository.getOne(storeId);
             orderMatch.setStore(store);
         }
-        orderMatch.setServiceType(serviceType);
-
+        if (!serviceType.isEmpty())
+            orderMatch.setServiceType(serviceType);
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
@@ -877,16 +879,16 @@ public class StoreReportsController {
 
     @GetMapping(value = "/report/staff", name = "staff-sales-report-list")
     public ResponseEntity<Object> staffReport(HttpServletRequest request,
-                                                      @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-                                                      @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
-                                                      @RequestParam(defaultValue = "created", required = false) String sortBy,
-                                                      @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
-                                                      @PathVariable("storeId") String storeId,
-                                                      @RequestParam(defaultValue = "0") int page,
-                                                      @RequestParam(defaultValue = "20") int pageSize,
-                                                      @RequestParam(defaultValue = "") String countryCode,
-                                                      @RequestParam(defaultValue = "") String serviceType,
-                                                      @RequestParam(defaultValue = "") String channel) throws IOException {
+                                              @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                              @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                              @RequestParam(defaultValue = "created", required = false) String sortBy,
+                                              @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                              @PathVariable("storeId") String storeId,
+                                              @RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "20") int pageSize,
+                                              @RequestParam(defaultValue = "") String countryCode,
+                                              @RequestParam(defaultValue = "") String serviceType,
+                                              @RequestParam(defaultValue = "") String channel) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         StoreUser storeUser = new StoreUser();
@@ -912,6 +914,129 @@ public class StoreReportsController {
         response.setData(products);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @GetMapping(value = "/report/staff/totalSales", name = "staff-sales-report-by-range")
+    public ResponseEntity<Object> staffByRange(HttpServletRequest request,
+                                               @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                               @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                               @RequestParam(defaultValue = "created", required = false) String sortBy,
+                                               @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                               @PathVariable("storeId") String storeId,
+                                               @RequestParam(defaultValue = "0") int page,
+                                               @RequestParam(defaultValue = "20") int pageSize,
+                                               @RequestParam(defaultValue = "") String countryCode,
+                                               @RequestParam(defaultValue = "") String serviceType,
+                                               @RequestParam(defaultValue = "") String channel) throws IOException {
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        StoreUser storeUser = new StoreUser();
+        storeUser.setStoreId(storeId);
+
+
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<StoreUser> example = Example.of(storeUser, matcher);
+
+        Pageable pageable = null;
+        if (sortingOrder.equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        } else {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+        }
+        Page<StoreUser> staffList = storeUsersRepository
+                .findAll(getStaffDetails(from, to, example), pageable);
+
+//daily
+        Date date = new Date();
+        Date endDate = new Date();
+        // daily sales
+        endDate.setDate(date.getDate() + 1);
+
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
+        String todayDate = simpleDateFormat.format(date);
+
+        String todayEndDate = simpleDateFormat.format(endDate);
+//week
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek() + 1);
+        Date firstDayOfWeek = cal.getTime();
+        Date lastDayOfWeek = cal.getTime();
+        firstDayOfWeek.setDate(firstDayOfWeek.getDate());
+        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
+        Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
+        Logger.application.info("First week  : " + simpleDateFormat.format(firstDayOfWeek));
+        Logger.application.info("last week  : " + simpleDateFormat.format(lastDayOfWeek));
+        Logger.application.info("Service Type  : " + serviceType);
+
+//month
+
+        Calendar c = Calendar.getInstance(); // this takes current date
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        Date firstDayOfMonth = c.getTime();
+        Date lastDayOfMonth = c.getTime();
+        lastDayOfMonth.setDate(firstDayOfMonth.getDate() + c.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        List<StaffSalesReport> staffSalesReportList = new ArrayList<>();
+
+
+        for (StoreUser staff : staffList.getContent()) {
+
+            StaffSalesReport staffSalesReport = new StaffSalesReport();
+            StaffDetails staffDetails = new StaffDetails();
+            staffDetails.setName(staff.getName());
+            staffDetails.setId(staff.getId());
+            staffDetails.setStoreId(staff.getStoreId());
+            staffSalesReport.setStaff(staffDetails);
+
+            List<Object[]> dailyOrder = orderRepository.fineAllByStatusAndDateRangeAndStaffId(storeId, todayDate, todayEndDate, serviceType, staff.getId());
+
+            for (Object[] element : dailyOrder) {
+                StaffOrderCount daily = new StaffOrderCount();
+                daily.setDate(todayDate);
+                daily.setTotal(Integer.parseInt(element[0].toString()));
+                staffSalesReport.setDailyCount(daily);
+            }
+
+
+            List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRangeAndStaffId(storeId,
+                    simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek), serviceType, staff.getId());
+
+            for (Object[] item : weeklyOrder) {
+
+                StaffOrderCount weekly = new StaffOrderCount();
+                weekly.setWeekNo(cal.WEEK_OF_YEAR);
+                weekly.setTotal(Integer.parseInt(item[0].toString()));
+                staffSalesReport.setWeeklyCount(weekly);
+            }
+
+            // monthly sales
+            Logger.application.info("First Month  : " + firstDayOfMonth);
+            Logger.application.info("Second Month : " + lastDayOfMonth);
+            List<Object[]> monthlyOrder = orderRepository.fineAllByStatusAndDateRangeAndStaffId(storeId,
+                    simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth), serviceType, staff.getId());
+
+            for (Object[] value : monthlyOrder) {
+
+                StaffOrderCount monthly = new StaffOrderCount();
+                monthly.setMonth(c.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH));
+                monthly.setTotal(Integer.parseInt(value[0].toString()));
+                staffSalesReport.setMonthlyCount(monthly);
+            }
+            staffSalesReportList.add(staffSalesReport);
+        }
+        Pageable paging = staffList.getPageable();
+
+        Page<StaffSalesReport> staffSalesReports = new PageImpl<>(staffSalesReportList, paging, staffSalesReportList.size());
+
+        response.setData(staffSalesReports);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     public Specification<Order> getSpecWithDatesBetween(
             Date from, Date to, OrderStatus completionStatus, Example<Order> example, String countryCode) {
 
@@ -1101,7 +1226,6 @@ public class StoreReportsController {
     }
 
 
-
     public Specification<StoreUser> getSpecStaffReportSaleWithDatesBetween(
             Date from, Date to, Example<StoreUser> example) {
 
@@ -1122,6 +1246,27 @@ public class StoreReportsController {
         };
     }
 
+
+    public Specification<StoreUser> getStaffDetails(
+            Date from, Date to, Example<StoreUser> example) {
+
+        return (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+//            Join<StoreUser, StoreShiftSummary> storeShiftSummary = root.join("shiftSummaries");
+
+//            if (from != null && to != null) {
+//                to.setDate(to.getDate() + 1);
+//                predicates.add(builder.greaterThanOrEqualTo(storeShiftSummary.get("created"), from));
+//                predicates.add(builder.lessThanOrEqualTo(storeShiftSummary.get("created"), to));
+//            }
+
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+            query.distinct(true);
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
     @Getter
     @Setter
     @ToString
@@ -1133,6 +1278,48 @@ public class StoreReportsController {
         private String endMonth;
         private Integer pageSize;
 
+    }
+
+
+    @Getter
+    @Setter
+    @ToString
+    @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class StaffSalesReport {
+
+        private StaffDetails staff;
+        private StaffOrderCount dailyCount;
+        private StaffOrderCount weeklyCount;
+        private StaffOrderCount monthlyCount;
+
+    }
+
+    @Getter
+    @Setter
+    public class StaffOrderCount {
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        String date;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        int weekNo;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        String month;
+        int total;
+    }
+
+    @Getter
+    @Setter
+    public class StaffDetails {
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        String name;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        String id;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        String storeId;
     }
 
 }
