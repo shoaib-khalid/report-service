@@ -1,3 +1,11 @@
+##################################################
+# Version v.3.5.1- Production | 12-Jan-2023
+##################################################
+### Code Changes:
+
+1. Added New Api For Staff Total Count Report
+2. Bug Fixes for the merchant detailed sale service type
+
 
 ##################################################
 # Version v.3.5.0- Production | 04-Jan-2023
