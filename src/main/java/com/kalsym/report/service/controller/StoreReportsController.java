@@ -917,26 +917,28 @@ public class StoreReportsController {
 
     @GetMapping(value = "/report/staff/totalSales", name = "staff-sales-report-by-range")
     public ResponseEntity<Object> staffByRange(HttpServletRequest request,
-                                               @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-                                               @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                               @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                               @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
                                                @RequestParam(defaultValue = "created", required = false) String sortBy,
                                                @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
                                                @PathVariable("storeId") String storeId,
                                                @RequestParam(defaultValue = "0") int page,
                                                @RequestParam(defaultValue = "20") int pageSize,
-                                               @RequestParam(defaultValue = "") String countryCode,
                                                @RequestParam(defaultValue = "") String serviceType,
-                                               @RequestParam(defaultValue = "") String channel) throws IOException {
+                                               @RequestParam(defaultValue = "") String staffName) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         StoreUser storeUser = new StoreUser();
         storeUser.setStoreId(storeId);
+        if (!staffName.isEmpty())
+            storeUser.setName(staffName);
 
 
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
                 .withIgnoreNullValues()
+                .withMatcher("name", new ExampleMatcher.GenericPropertyMatcher())
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<StoreUser> example = Example.of(storeUser, matcher);
 
