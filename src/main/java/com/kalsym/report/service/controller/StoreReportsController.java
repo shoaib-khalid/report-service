@@ -1011,7 +1011,7 @@ public class StoreReportsController {
             for (Object[] item : weeklyOrder) {
 
                 StaffOrderCount weekly = new StaffOrderCount();
-                weekly.setWeekNo(cal.WEEK_OF_YEAR);
+                weekly.setWeekNo(cal.WEEK_OF_YEAR - 1);
                 weekly.setTotal(Integer.parseInt(item[0].toString()));
                 staffSalesReport.setWeeklyCount(weekly);
             }
