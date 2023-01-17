@@ -975,6 +975,17 @@ public class StoreReportsController {
         Logger.application.info("last week  : " + simpleDateFormat.format(lastDayOfWeek));
         Logger.application.info("Service Type  : " + serviceType);
 
+
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek() - 1);
+        Date firstDayOfPreviousWeek = cal.getTime();
+        Date lastDayOfPreviousWeek = cal.getTime();
+        firstDayOfPreviousWeek.setDate(firstDayOfWeek.getDate());
+        lastDayOfPreviousWeek.setDate(firstDayOfWeek.getDate() + 7);
+        Logger.application.info("First Day of The Week  : " + firstDayOfPreviousWeek.getDate());
+        Logger.application.info("First week  : " + simpleDateFormat.format(firstDayOfPreviousWeek));
+        Logger.application.info("last week  : " + simpleDateFormat.format(lastDayOfPreviousWeek));
+        Logger.application.info("Service Type  : " + serviceType);
+
 //month
 
         Calendar c = Calendar.getInstance(); // this takes current date
@@ -982,6 +993,14 @@ public class StoreReportsController {
         Date firstDayOfMonth = c.getTime();
         Date lastDayOfMonth = c.getTime();
         lastDayOfMonth.setDate(firstDayOfMonth.getDate() + c.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+
+        Calendar month = Calendar.getInstance(); // this takes current date
+        month.set(Calendar.DAY_OF_MONTH, -1);
+        Date firstDayOfPreviousMonth = month.getTime();
+        Date lastDayOfPreviousMonth = month.getTime();
+        lastDayOfPreviousMonth.setDate(firstDayOfPreviousMonth.getDate() + month.getActualMaximum(Calendar.DAY_OF_MONTH));
+
 
         List<StaffSalesReport> staffSalesReportList = new ArrayList<>();
 
@@ -1011,9 +1030,21 @@ public class StoreReportsController {
             for (Object[] item : weeklyOrder) {
 
                 StaffOrderCount weekly = new StaffOrderCount();
-                weekly.setWeekNo(cal.WEEK_OF_YEAR - 1);
+                weekly.setWeekNo(cal.WEEK_OF_YEAR);
                 weekly.setTotal(Integer.parseInt(item[0].toString()));
                 staffSalesReport.setWeeklyCount(weekly);
+            }
+
+
+            List<Object[]> previousWeeklyOrder = orderRepository.fineAllByStatusAndDateRangeAndStaffId(storeId,
+                    simpleDateFormat.format(firstDayOfPreviousWeek), simpleDateFormat.format(lastDayOfPreviousWeek), serviceType, staff.getId());
+
+            for (Object[] item : previousWeeklyOrder) {
+
+                StaffOrderCount previousWeek = new StaffOrderCount();
+                previousWeek.setWeekNo(cal.WEEK_OF_YEAR);
+                previousWeek.setTotal(Integer.parseInt(item[0].toString()));
+                staffSalesReport.setPreviousWeeklyCount(previousWeek);
             }
 
             // monthly sales
@@ -1029,11 +1060,25 @@ public class StoreReportsController {
                 monthly.setTotal(Integer.parseInt(value[0].toString()));
                 staffSalesReport.setMonthlyCount(monthly);
             }
+
+
+            List<Object[]> previousMonthOrder = orderRepository.fineAllByStatusAndDateRangeAndStaffId(storeId,
+                    simpleDateFormat.format(firstDayOfPreviousMonth), simpleDateFormat.format(lastDayOfPreviousMonth), serviceType, staff.getId());
+
+            for (Object[] value : previousMonthOrder) {
+
+                StaffOrderCount previousMonth = new StaffOrderCount();
+                previousMonth.setMonth(month.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH));
+                previousMonth.setTotal(Integer.parseInt(value[0].toString()));
+                staffSalesReport.setPreviousMonthlyCount(previousMonth);
+            }
+
+
             staffSalesReportList.add(staffSalesReport);
         }
         Pageable paging = staffList.getPageable();
 
-        Page<StaffSalesReport> staffSalesReports = new PageImpl<>(staffSalesReportList, paging, staffSalesReportList.size());
+        Page<StaffSalesReport> staffSalesReports = new PageImpl<>(staffSalesReportList, paging, staffList.getTotalElements());
 
         response.setData(staffSalesReports);
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -1287,13 +1332,15 @@ public class StoreReportsController {
     @Setter
     @ToString
     @NoArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+//    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class StaffSalesReport {
 
         private StaffDetails staff;
         private StaffOrderCount dailyCount;
         private StaffOrderCount weeklyCount;
+        private StaffOrderCount previousWeeklyCount;
         private StaffOrderCount monthlyCount;
+        private StaffOrderCount previousMonthlyCount;
 
     }
 
@@ -1307,7 +1354,14 @@ public class StoreReportsController {
         int weekNo;
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
+        int previousWeekNo;
+
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         String month;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        String lastMonth;
         int total;
     }
 
