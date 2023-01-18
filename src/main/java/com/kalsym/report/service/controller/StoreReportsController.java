@@ -924,7 +924,7 @@ public class StoreReportsController {
                                                @PathVariable("storeId") String storeId,
                                                @RequestParam(defaultValue = "0") int page,
                                                @RequestParam(defaultValue = "20") int pageSize,
-                                               @RequestParam(defaultValue = "") String serviceType,
+                                               @RequestParam(defaultValue = "DINEIN") String serviceType,
                                                @RequestParam(defaultValue = "") String staffName) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
