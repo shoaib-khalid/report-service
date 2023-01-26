@@ -591,7 +591,7 @@ public class StoreReportsController {
                                                   @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
                                                   @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
                                                   @RequestParam(defaultValue = "") String countryCode,
-                                                  @RequestParam(defaultValue = "DELIVERIN") String serviceType)
+                                                  @RequestParam(defaultValue = "") String serviceType)
             throws IOException {
         // TODO: not completed
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -608,8 +608,14 @@ public class StoreReportsController {
         String todayDate = simpleDateFormat.format(date);
 
         String todayEndDate = simpleDateFormat.format(endDate);
+        List<Object[]> dailyOrder;
 
-        List<Object[]> dailyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, todayDate, todayEndDate, serviceType);
+        if (!serviceType.isEmpty()) {
+            dailyOrder = orderRepository.findAllByStatusAndDateRangeAndServiceType(storeId, todayDate, todayEndDate, serviceType);
+        } else {
+            dailyOrder = orderRepository.findAllByStatusAndDateRange(storeId, todayDate, todayEndDate);
+        }
+
         Set<OrderCount> todaySales = new HashSet<>();
 
         for (Object[] element : dailyOrder) {
@@ -630,9 +636,14 @@ public class StoreReportsController {
         Logger.application.info("First week  : " + simpleDateFormat.format(firstDayOfWeek));
         Logger.application.info("last week  : " + simpleDateFormat.format(lastDayOfWeek));
         Logger.application.info("Service Type  : " + serviceType);
-
-        List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId,
-                simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek), serviceType);
+        List<Object[]> weeklyOrder;
+        if (!serviceType.isEmpty()) {
+            weeklyOrder = orderRepository.findAllByStatusAndDateRangeAndServiceType(storeId,
+                    simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek), serviceType);
+        } else {
+            weeklyOrder = orderRepository.findAllByStatusAndDateRange(storeId,
+                    simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek));
+        }
         Set<OrderCount> weeklySales = new HashSet<>();
 
         for (Object[] item : weeklyOrder) {
@@ -652,8 +663,14 @@ public class StoreReportsController {
 
         Logger.application.info("First Month  : " + firstDayOfMonth);
         Logger.application.info("Second Month : " + lastDayOfMonth);
-        List<Object[]> monthlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId,
-                simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth), serviceType);
+        List<Object[]> monthlyOrder;
+        if (!serviceType.isEmpty()) {
+            monthlyOrder = orderRepository.findAllByStatusAndDateRangeAndServiceType(storeId,
+                    simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth), serviceType);
+        } else {
+            monthlyOrder = orderRepository.findAllByStatusAndDateRange(storeId,
+                    simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth));
+        }
         Set<OrderCount> monthlySales = new HashSet<>();
 
         for (Object[] value : monthlyOrder) {
@@ -670,11 +687,20 @@ public class StoreReportsController {
 
         Logger.application.info("First Month  : " + firstDayOfMonth);
         Logger.application.info("Second Month : " + lastDayOfMonth);
-        List<Object[]> yearlyOrder = orderRepository.fineAllByStatusAndDateRange(storeId,
-                simpleDateFormat.format(firstDayOfYear), todayEndDate, serviceType);
+
+        List<Object[]> yearlyOrder;
+        if (!serviceType.isEmpty()) {
+            yearlyOrder = orderRepository.findAllByStatusAndDateRangeAndServiceType(storeId,
+                    simpleDateFormat.format(firstDayOfYear), todayEndDate, serviceType);
+        } else {
+            yearlyOrder = orderRepository.findAllByStatusAndDateRange(storeId,
+                    simpleDateFormat.format(firstDayOfYear), todayEndDate);
+        }
+
         Set<OrderCount> yearlyOrders = new HashSet<>();
 
-        for (Object[] value : yearlyOrder) {
+        for (
+                Object[] value : yearlyOrder) {
 
             OrderCount yearlyOrderCount = new OrderCount();
             yearlyOrderCount.setCompletionStatus(value[0].toString());
@@ -691,7 +717,9 @@ public class StoreReportsController {
         response.setData(viewTotal);
         response.setSuccessStatus(HttpStatus.OK);
 
-        return ResponseEntity.status(response.getStatus()).body(response.getData());
+        return ResponseEntity.status(response.getStatus()).
+
+                body(response.getData());
     }
 
     @GetMapping(value = "/weeklySale", name = "store-weekly-sales-count")
@@ -715,7 +743,7 @@ public class StoreReportsController {
         Date lastDayOfWeek = to;
         Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
 
-        List<Object[]> weeklyOrder = orderRepository.fineAllByStatusAndDateRange(storeId, simpleDateFormat.format(from),
+        List<Object[]> weeklyOrder = orderRepository.findAllByStatusAndDateRangeAndServiceType(storeId, simpleDateFormat.format(from),
                 simpleDateFormat.format(to), serviceType);
         Set<OrderCount> weeklySales = new HashSet<>();
 
@@ -1283,7 +1311,6 @@ public class StoreReportsController {
             if (from != null && to != null) {
                 to.setDate(to.getDate() + 1);
                 predicates.add(builder.greaterThanOrEqualTo(storeShiftSummary.get("created"), from));
-                predicates.add(builder.lessThanOrEqualTo(storeShiftSummary.get("created"), to));
             }
 
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
