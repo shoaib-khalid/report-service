@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.kalsym</groupId>
     <artifactId>report-service</artifactId>
-    <version>3.5.1-Production</version>
+    <version>3.5.2-Production</version>
     <packaging>jar</packaging>
     <parent>
         <groupId>org.springframework.boot</groupId>
