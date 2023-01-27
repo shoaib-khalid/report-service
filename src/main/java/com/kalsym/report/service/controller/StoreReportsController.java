@@ -958,6 +958,7 @@ public class StoreReportsController {
 
         StoreUser storeUser = new StoreUser();
         storeUser.setStoreId(storeId);
+        storeUser.setDeactivated(false);
         if (!staffName.isEmpty())
             storeUser.setName(staffName);
 
