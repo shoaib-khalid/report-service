@@ -52,4 +52,7 @@ public class StoreShiftSummary implements Serializable {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "summaryId", insertable = false, updatable = false, nullable = true)
     private List<StoreShiftSummaryDetails> summaryDetails;
+
+    @Transient
+    private Double totalSales;
 }

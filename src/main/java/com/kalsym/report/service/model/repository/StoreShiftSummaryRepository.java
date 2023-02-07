@@ -1,6 +1,10 @@
 package com.kalsym.report.service.model.repository;
 
 import com.kalsym.report.service.model.StoreShiftSummary;
+import com.kalsym.report.service.model.StoreUser;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -47,5 +51,9 @@ public interface StoreShiftSummaryRepository extends JpaRepository<StoreShiftSum
     void UpdateOrderClose(
             @Param("staffId") String staffId
     );
+
+
+
+    Page<StoreShiftSummary> findAll(Specification<StoreShiftSummary> specStaffReportSaleWithDatesBetween, Pageable pageable);
 
 }

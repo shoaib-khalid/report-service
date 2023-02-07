@@ -24,8 +24,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Subquery;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.text.ParseException;
@@ -68,6 +70,9 @@ public class StoreReportsController {
 
     @Autowired
     StoreUsersRepository storeUsersRepository;
+
+    @Autowired
+    StoreShiftSummaryRepository storeShiftSummaryRepository;
 
 
     @GetMapping(value = "/report/detailedDailySales", name = "store-detail-report-sale-get")
@@ -1113,6 +1118,70 @@ public class StoreReportsController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+
+    @GetMapping(value = "/report/staff/totalSales/{staffId}", name = "staff-sales-report-by-range")
+    public ResponseEntity<Object> getStaffSalesReport(HttpServletRequest request,
+                                                      @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                                      @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                                      @RequestParam(defaultValue = "created", required = false) String sortBy,
+                                                      @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                                      @PathVariable("storeId") String storeId,
+                                                      @PathVariable("staffId") String staffId,
+                                                      @RequestParam(defaultValue = "0") int page,
+                                                      @RequestParam(defaultValue = "20") int pageSize,
+                                                      @RequestParam(defaultValue = "DINEIN") String serviceType) throws IOException {
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        StoreShiftSummary storeShiftSummary = new StoreShiftSummary();
+        storeShiftSummary.setUserId(staffId);
+
+
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withMatcher("name", new ExampleMatcher.GenericPropertyMatcher())
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<StoreShiftSummary> example = Example.of(storeShiftSummary, matcher);
+
+        Pageable pageable = null;
+        if (sortingOrder.equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        } else {
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortBy).ascending());
+        }
+        Page<StoreShiftSummary> storeShiftSummaries = storeShiftSummaryRepository.findAll(getStaffSalesSummary(from, to, example), pageable);
+        List<StoreShiftSummary> l = new ArrayList<>();
+
+        for (StoreShiftSummary summary : storeShiftSummaries.getContent()) {
+            Double total = 0.00;
+            for (StoreShiftSummaryDetails s : summary.getSummaryDetails()) {
+                total = s.getSaleAmount() + total;
+            }
+            summary.setTotalSales(total);
+            l.add(summary);
+        }
+        Page<StoreShiftSummary> storeShiftDetail = new PageImpl<>(l, storeShiftSummaries.getPageable(), storeShiftSummaries.getTotalElements());
+        response.setData(storeShiftDetail);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+    @GetMapping(value = "/report/staff/name", name = "staff-sales-report-by-range")
+    public ResponseEntity<Object> getStaffSalesReport(HttpServletRequest request,
+                                                      @PathVariable("storeId") String storeId
+                                                      ) throws IOException {
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        List<StoreUser> userList = storeUsersRepository.findByStoreId(storeId);
+        if (userList.isEmpty()) {
+            response.setMessage("NOT FOUND");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        response.setData(userList);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
     public Specification<Order> getSpecWithDatesBetween(
             Date from, Date to, OrderStatus completionStatus, Example<Order> example, String countryCode) {
 
@@ -1324,6 +1393,27 @@ public class StoreReportsController {
 
     public Specification<StoreUser> getStaffDetails(
             Date from, Date to, Example<StoreUser> example) {
+
+        return (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+//            Join<StoreUser, StoreShiftSummary> storeShiftSummary = root.join("shiftSummaries");
+
+//            if (from != null && to != null) {
+//                to.setDate(to.getDate() + 1);
+//                predicates.add(builder.greaterThanOrEqualTo(storeShiftSummary.get("created"), from));
+//                predicates.add(builder.lessThanOrEqualTo(storeShiftSummary.get("created"), to));
+//            }
+
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+            query.distinct(true);
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+
+    public Specification<StoreShiftSummary> getStaffSalesSummary(
+            Date from, Date to, Example<StoreShiftSummary> example) {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
