@@ -1417,13 +1417,13 @@ public class StoreReportsController {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
-//            Join<StoreUser, StoreShiftSummary> storeShiftSummary = root.join("shiftSummaries");
+            Join<StoreUser, StoreShiftSummary> storeShiftSummary = root.join("shiftSummaries");
 
-//            if (from != null && to != null) {
-//                to.setDate(to.getDate() + 1);
-//                predicates.add(builder.greaterThanOrEqualTo(storeShiftSummary.get("created"), from));
-//                predicates.add(builder.lessThanOrEqualTo(storeShiftSummary.get("created"), to));
-//            }
+            if (from != null && to != null) {
+                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(storeShiftSummary.get("created"), from));
+                predicates.add(builder.lessThanOrEqualTo(storeShiftSummary.get("created"), to));
+            }
 
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
             query.distinct(true);
