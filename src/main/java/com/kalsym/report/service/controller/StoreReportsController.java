@@ -787,7 +787,7 @@ public class StoreReportsController {
         cal.add(Calendar.DATE, -7);
         cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
         Date firstDayOfWeek = from;
-        Date lastDayOfWeek = to;
+        to.setDate(to.getDate() + 1);
 
         Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
         Logger.application.info("Service TYPE   : " + serviceType.isEmpty());
@@ -1170,7 +1170,7 @@ public class StoreReportsController {
     @GetMapping(value = "/report/staff/name", name = "staff-sales-report-by-range")
     public ResponseEntity<Object> getStaffSalesReport(HttpServletRequest request,
                                                       @PathVariable("storeId") String storeId
-                                                      ) throws IOException {
+    ) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         List<StoreUser> userList = storeUsersRepository.findByStoreId(storeId);
         if (userList.isEmpty()) {
@@ -1417,12 +1417,11 @@ public class StoreReportsController {
 
         return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
-            Join<StoreUser, StoreShiftSummary> storeShiftSummary = root.join("shiftSummaries");
 
             if (from != null && to != null) {
                 to.setDate(to.getDate() + 1);
-                predicates.add(builder.greaterThanOrEqualTo(storeShiftSummary.get("created"), from));
-                predicates.add(builder.lessThanOrEqualTo(storeShiftSummary.get("created"), to));
+                predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
             }
 
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
