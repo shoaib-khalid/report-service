@@ -1173,10 +1173,10 @@ public class StoreReportsController {
     ) throws IOException {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         List<StoreUser> userList = storeUsersRepository.findByStoreId(storeId);
-        if (userList.isEmpty()) {
-            response.setMessage("NOT FOUND");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
+//        if (userList.isEmpty()) {
+//            response.setMessage("NOT FOUND");
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+//        }
         response.setData(userList);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
