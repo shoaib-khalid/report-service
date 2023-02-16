@@ -1213,10 +1213,14 @@ public class StoreReportsController {
         Set<OrderCount> todaySales = new HashSet<>();
 
         for (Object[] element : dailyOrder) {
-
             OrderCount dailyOrderCount = new OrderCount();
-            dailyOrderCount.setDate(element[0].toString());
-            dailyOrderCount.setTotalSalesAmount(Double.parseDouble(element[1].toString()));
+            if (element[0].toString() != null) {
+                dailyOrderCount.setDate(element[0].toString());
+                dailyOrderCount.setTotalSalesAmount(Double.parseDouble(element[1].toString()));
+            }else{
+                dailyOrderCount.setDate(todayDate);
+                dailyOrderCount.setTotalSalesAmount(0.00);
+            }
             todaySales.add(dailyOrderCount);
         }
         // weekly sales
@@ -1370,9 +1374,6 @@ public class StoreReportsController {
 
         return ResponseEntity.status(response.getStatus()).body(response.getData());
     }
-
-
-
 
 
     //Specification//
