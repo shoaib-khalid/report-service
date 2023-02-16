@@ -10,5 +10,7 @@ public class OrderCount {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String date;
     int total;
+
+    Double totalSalesAmount;
     String completionStatus;
 }

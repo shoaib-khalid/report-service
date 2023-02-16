@@ -1,4 +1,19 @@
 ##################################################
+# Version v.3.5.4- Production | 16-Feb-2023
+##################################################
+### Code Changes:
+1. Added New Api For New Changes for Dashboard
+   1. The data on Sales Overview should be showing the Sales Amount, such as:
+   > Today Sales
+   > Weekly Sales
+   > Monthly Sales
+   > Total Sales
+
+   2. The Weekly Graph should show the Overview of the Orders & Sales Amount based on Monday until Sunday
+
+   3. Change the Top Product to Top Sales based on the day as well (Monday until Sunday) 
+
+##################################################
 # Version v.3.5.3- Production | 07-Feb-2023
 ##################################################
 ### Code Changes:
