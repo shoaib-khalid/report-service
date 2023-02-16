@@ -119,18 +119,44 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     List<Object[]> findAllByStatusAndDateRange(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
 
 
-
     @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalSales , DATE(created) " +
             "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId  AND o.serviceType = :serviceType GROUP BY o.completionStatus, DATE(created) ORDER BY  DATE(created) ASC", nativeQuery = true)
     List<Object[]> fineAllByStatusAndDateRangeAndGroupAndServiceType(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("serviceType") String serviceType);
-
 
     @Query(value = "SELECT o.completionStatus , COUNT(*) AS totalSales , DATE(created) " +
             "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId  GROUP BY o.completionStatus, DATE(created) ORDER BY  DATE(created) ASC", nativeQuery = true)
     List<Object[]> fineAllByStatusAndDateRangeAndGroup(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
 
     @Query(value = "SELECT COUNT(*) AS totalSales FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId AND o.serviceType = :serviceType and o.staffId = :staffId", nativeQuery = true)
-    List<Object[]> fineAllByStatusAndDateRangeAndStaffId(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("serviceType") String serviceType ,  @Param("staffId") String staffId);
+    List<Object[]> fineAllByStatusAndDateRangeAndStaffId(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("serviceType") String serviceType, @Param("staffId") String staffId);
+
+
+    //Version 2.0
+    @Query(value = "SELECT COUNT(*) AS totalSales, SUM(o.total) AS total, DATE(created) FROM symplified.`order` o " +
+            "WHERE o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId AND o.serviceType = :serviceType " +
+            "GROUP BY DATE(created) ORDER BY DATE(created) ASC", nativeQuery = true)
+    List<Object[]> findAllDateRangeAndSumTotalSales(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("serviceType") String serviceType);
+
+    @Query(value = "SELECT COUNT(*) AS totalSales, SUM(o.total) AS total , DATE(created) " +
+            "FROM symplified.`order` o WHERE  o.created > :startDate AND o.created < :endDate AND o.storeId = :storeId  GROUP BY DATE(created) ORDER BY  DATE(created) ASC", nativeQuery = true)
+    List<Object[]> findAllDateRangeAndSumTotalSalesGroup(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
+
+    //TotalSalesCountForDashboard
+    @Query(value = "SELECT DATE(created) as DATE ,SUM(o.total) AS amount FROM symplified.`order` o WHERE o.created > :startDate AND o.created < :endDate" +
+            " AND o.storeId = :storeId AND o.serviceType = :serviceType AND o.completionStatus NOT IN ('CANCELED_BY_CUSTOMER', 'CANCELED_BY_MERCHANT', 'FAILED');", nativeQuery = true)
+    List<Object[]> dailyTotalSalesAmountByServiceType(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("serviceType") String serviceType);
+
+    @Query(value = "SELECT" +
+            "DATE(created) as DATE ," +
+            "SUM(o.total) AS amount" +
+            "FROM" +
+            "symplified.`order` o" +
+            "WHERE" +
+            "o.created > :startDate" +
+            "AND o.created < :endDate" +
+            "AND o.storeId = :storeId" +
+            "AND o.completionStatus NOT IN ('CANCELED_BY_CUSTOMER', 'CANCELED_BY_MERCHANT', 'FAILED');", nativeQuery = true)
+    List<Object[]> dailyTotalSalesAmount(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
 
 
 }

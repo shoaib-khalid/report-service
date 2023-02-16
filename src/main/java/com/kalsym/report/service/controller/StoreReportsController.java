@@ -910,6 +910,9 @@ public class StoreReportsController {
     }
 // STAFF SALES REPORT
 
+
+    //NEW CHANGES VERSION 2.0 MERCHANT PORTAL INCLUDING STAFF REPORT AND NEW DASHBOARD DESIGN
+
     @GetMapping(value = "/report/staff", name = "staff-sales-report-list")
     public ResponseEntity<Object> staffReport(HttpServletRequest request,
                                               @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
@@ -948,7 +951,7 @@ public class StoreReportsController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping(value = "/report/staff/totalSales", name = "staff-sales-report-by-range")
+    @GetMapping(value = "/report/staff/totalSales", name = "staff-total-sales-by-store")
     public ResponseEntity<Object> staffByRange(HttpServletRequest request,
                                                @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
                                                @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
@@ -1119,7 +1122,7 @@ public class StoreReportsController {
     }
 
 
-    @GetMapping(value = "/report/staff/totalSales/{staffId}", name = "staff-sales-report-by-range")
+    @GetMapping(value = "/report/staff/totalSales/{staffId}", name = "staff-total-sales-by-staffId")
     public ResponseEntity<Object> getStaffSalesReport(HttpServletRequest request,
                                                       @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
                                                       @RequestParam(required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
@@ -1167,21 +1170,212 @@ public class StoreReportsController {
     }
 
 
-    @GetMapping(value = "/report/staff/name", name = "staff-sales-report-by-range")
-    public ResponseEntity<Object> getStaffSalesReport(HttpServletRequest request,
-                                                      @PathVariable("storeId") String storeId
-    ) throws IOException {
+    @GetMapping(value = "/report/staff/name", name = "staff-get-name-list")
+    public ResponseEntity<Object> getStaffSalesReport(HttpServletRequest request, @PathVariable("storeId") String storeId) {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         List<StoreUser> userList = storeUsersRepository.findByStoreId(storeId);
-//        if (userList.isEmpty()) {
-//            response.setMessage("NOT FOUND");
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-//        }
+
         response.setData(userList);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
 
+    @GetMapping(value = "/totalSalesAmount", name = "store-total-sales-amount")
+    public ResponseEntity<Object> totalSalesAmount(HttpServletRequest request, @PathVariable("storeId") String storeId,
+                                                   @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                                   @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                                   @RequestParam(defaultValue = "") String countryCode,
+                                                   @RequestParam(defaultValue = "") String serviceType)
+            throws IOException {
+        // TODO: not completed
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logPrefix = request.getRequestURI();
+        DashboardViewTotal viewTotal = new DashboardViewTotal();
+        Date date = new Date();
+        Date endDate = new Date();
+        // daily sales
+        endDate.setDate(date.getDate() + 1);
+
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
+        String todayDate = simpleDateFormat.format(date);
+
+        String todayEndDate = simpleDateFormat.format(endDate);
+        List<Object[]> dailyOrder;
+
+        if (!serviceType.isEmpty()) {
+            dailyOrder = orderRepository.dailyTotalSalesAmountByServiceType(storeId, todayDate, todayEndDate, serviceType);
+        } else {
+            dailyOrder = orderRepository.dailyTotalSalesAmount(storeId, todayDate, todayEndDate);
+        }
+
+        Set<OrderCount> todaySales = new HashSet<>();
+
+        for (Object[] element : dailyOrder) {
+
+            OrderCount dailyOrderCount = new OrderCount();
+            dailyOrderCount.setDate(element[0].toString());
+            dailyOrderCount.setTotalSalesAmount(Double.parseDouble(element[1].toString()));
+            todaySales.add(dailyOrderCount);
+        }
+        // weekly sales
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek() + 1);
+        Date firstDayOfWeek = cal.getTime();
+        Date lastDayOfWeek = cal.getTime();
+        firstDayOfWeek.setDate(firstDayOfWeek.getDate());
+        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 7);
+        Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
+        Logger.application.info("First week  : " + simpleDateFormat.format(firstDayOfWeek));
+        Logger.application.info("last week  : " + simpleDateFormat.format(lastDayOfWeek));
+        Logger.application.info("Service Type  : " + serviceType);
+        List<Object[]> weeklyOrder;
+        if (!serviceType.isEmpty()) {
+            weeklyOrder = orderRepository.dailyTotalSalesAmountByServiceType(storeId,
+                    simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek), serviceType);
+        } else {
+            weeklyOrder = orderRepository.dailyTotalSalesAmount(storeId,
+                    simpleDateFormat.format(firstDayOfWeek), simpleDateFormat.format(lastDayOfWeek));
+        }
+        Set<OrderCount> weeklySales = new HashSet<>();
+
+        for (Object[] item : weeklyOrder) {
+
+            OrderCount weeklyOrderCount = new OrderCount();
+            weeklyOrderCount.setDate(item[0].toString());
+            weeklyOrderCount.setTotalSalesAmount(Double.parseDouble(item[1].toString()));
+            weeklySales.add(weeklyOrderCount);
+        }
+        // monthly sales
+
+        Calendar c = Calendar.getInstance(); // this takes current date
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        Date firstDayOfMonth = c.getTime();
+        Date lastDayOfMonth = c.getTime();
+        lastDayOfMonth.setDate(firstDayOfMonth.getDate() + c.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        Logger.application.info("First Month  : " + firstDayOfMonth);
+        Logger.application.info("Second Month : " + lastDayOfMonth);
+        List<Object[]> monthlyOrder;
+        if (!serviceType.isEmpty()) {
+            monthlyOrder = orderRepository.dailyTotalSalesAmountByServiceType(storeId,
+                    simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth), serviceType);
+        } else {
+            monthlyOrder = orderRepository.dailyTotalSalesAmount(storeId,
+                    simpleDateFormat.format(firstDayOfMonth), simpleDateFormat.format(lastDayOfMonth));
+        }
+        Set<OrderCount> monthlySales = new HashSet<>();
+
+        for (Object[] value : monthlyOrder) {
+
+            OrderCount monthlyOrderCount = new OrderCount();
+            monthlyOrderCount.setDate(value[0].toString());
+            monthlyOrderCount.setTotalSalesAmount(Double.parseDouble(value[1].toString()));
+            monthlySales.add(monthlyOrderCount);
+
+        }
+
+        cal.set(Calendar.DAY_OF_YEAR, 1);
+        Date firstDayOfYear = cal.getTime();
+
+        Logger.application.info("First Month  : " + firstDayOfMonth);
+        Logger.application.info("Second Month : " + lastDayOfMonth);
+
+        List<Object[]> yearlyOrder;
+        if (!serviceType.isEmpty()) {
+            yearlyOrder = orderRepository.dailyTotalSalesAmountByServiceType(storeId,
+                    simpleDateFormat.format(firstDayOfYear), todayEndDate, serviceType);
+        } else {
+            yearlyOrder = orderRepository.dailyTotalSalesAmount(storeId,
+                    simpleDateFormat.format(firstDayOfYear), todayEndDate);
+        }
+
+        Set<OrderCount> yearlyOrders = new HashSet<>();
+
+        for (Object[] value : yearlyOrder) {
+
+            OrderCount yearlyOrderCount = new OrderCount();
+            yearlyOrderCount.setDate(value[0].toString());
+            yearlyOrderCount.setTotalSalesAmount(Double.parseDouble(value[1].toString()));
+            yearlyOrders.add(yearlyOrderCount);
+
+        }
+
+        viewTotal.setDailySales(todaySales);
+        viewTotal.setWeeklySales(weeklySales);
+        viewTotal.setMonthlySales(monthlySales);
+        viewTotal.setTotalSales(yearlyOrders);
+
+        response.setData(viewTotal);
+        response.setSuccessStatus(HttpStatus.OK);
+
+        return ResponseEntity.status(response.getStatus()).
+
+                body(response.getData());
+    }
+
+
+    @GetMapping(value = "/weeklySalesGraph", name = "store-weekly-sales-amount")
+    public ResponseEntity<Object> weeklySalesGraph(HttpServletRequest request, @PathVariable("storeId") String storeId,
+                                                   @RequestParam(required = false, defaultValue = "2019-01-06") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                                   @RequestParam(required = false, defaultValue = "2021-12-31") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+                                                   @RequestParam(defaultValue = "created", required = false) String sortBy,
+                                                   @RequestParam(defaultValue = "ASC", required = false) String sortingOrder,
+                                                   @RequestParam(defaultValue = "") String countryCode,
+                                                   @RequestParam(defaultValue = "") String serviceType) throws IOException {
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logPrefix = request.getRequestURI();
+        DashboardViewTotal viewTotal = new DashboardViewTotal();
+        //
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        // weekly sales
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -7);
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+        Date firstDayOfWeek = from;
+        to.setDate(to.getDate() + 1);
+
+        Logger.application.info("First Day of The Week  : " + firstDayOfWeek.getDate());
+        Logger.application.info("Service TYPE   : " + serviceType.isEmpty());
+        List<Object[]> weeklyOrder;
+        if (!serviceType.isEmpty())
+            weeklyOrder = orderRepository.findAllDateRangeAndSumTotalSales(storeId,
+                    simpleDateFormat.format(from), simpleDateFormat.format(to), serviceType);
+        else
+            weeklyOrder = orderRepository.findAllDateRangeAndSumTotalSalesGroup(storeId,
+                    simpleDateFormat.format(from), simpleDateFormat.format(to));
+        // List<OrderCount> weeklySales = new HashSet<>();
+        List<OrderCount> weeklySales = new ArrayList<>();
+
+        for (Object[] item : weeklyOrder) {
+
+            OrderCount weeklyOrderCount = new OrderCount();
+            weeklyOrderCount.setTotalSalesAmount(Double.parseDouble(item[1].toString()));
+            weeklyOrderCount.setDate(item[2].toString());
+            weeklySales.add(weeklyOrderCount);
+        }
+
+        Collections.sort(weeklySales, new Comparator<OrderCount>() {
+            public int compare(OrderCount o1, OrderCount o2) {
+                return o1.getDate().compareTo(o2.getDate());
+            }
+        });
+        // Collections.reverse(weeklySales);
+
+        viewTotal.setDashboardGraph(weeklySales);
+        response.setData(viewTotal);
+        response.setSuccessStatus(HttpStatus.OK);
+
+        return ResponseEntity.status(response.getStatus()).body(response.getData());
+    }
+
+
+
+
+
+    //Specification//
     public Specification<Order> getSpecWithDatesBetween(
             Date from, Date to, OrderStatus completionStatus, Example<Order> example, String countryCode) {
 
