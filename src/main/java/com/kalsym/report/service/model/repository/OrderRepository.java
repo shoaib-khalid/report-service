@@ -146,16 +146,8 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
             " AND o.storeId = :storeId AND o.serviceType = :serviceType AND o.completionStatus NOT IN ('CANCELED_BY_CUSTOMER', 'CANCELED_BY_MERCHANT', 'FAILED');", nativeQuery = true)
     List<Object[]> dailyTotalSalesAmountByServiceType(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("serviceType") String serviceType);
 
-    @Query(value = "SELECT" +
-            "DATE(created) as DATE ," +
-            "SUM(o.total) AS amount" +
-            "FROM" +
-            "symplified.`order` o" +
-            "WHERE" +
-            "o.created > :startDate" +
-            "AND o.created < :endDate" +
-            "AND o.storeId = :storeId" +
-            "AND o.completionStatus NOT IN ('CANCELED_BY_CUSTOMER', 'CANCELED_BY_MERCHANT', 'FAILED');", nativeQuery = true)
+    @Query(value = "SELECT DATE(created) as DATE , SUM(o.total) AS amount FROM symplified.`order` o WHERE o.created > :startDate AND o.created < :endDate " +
+            "AND o.storeId = :storeId AND o.completionStatus NOT IN ('CANCELED_BY_CUSTOMER', 'CANCELED_BY_MERCHANT', 'FAILED');", nativeQuery = true)
     List<Object[]> dailyTotalSalesAmount(@Param("storeId") String storeId, @Param("startDate") String startDate, @Param("endDate") String endDate);
 
 

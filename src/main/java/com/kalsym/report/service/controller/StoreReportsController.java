@@ -1214,10 +1214,10 @@ public class StoreReportsController {
 
         for (Object[] element : dailyOrder) {
             OrderCount dailyOrderCount = new OrderCount();
-            if (element[0].toString() != null) {
+            if (element[0] != null) {
                 dailyOrderCount.setDate(element[0].toString());
                 dailyOrderCount.setTotalSalesAmount(Double.parseDouble(element[1].toString()));
-            }else{
+            } else {
                 dailyOrderCount.setDate(todayDate);
                 dailyOrderCount.setTotalSalesAmount(0.00);
             }
@@ -1245,11 +1245,17 @@ public class StoreReportsController {
         Set<OrderCount> weeklySales = new HashSet<>();
 
         for (Object[] item : weeklyOrder) {
-
             OrderCount weeklyOrderCount = new OrderCount();
-            weeklyOrderCount.setDate(item[0].toString());
-            weeklyOrderCount.setTotalSalesAmount(Double.parseDouble(item[1].toString()));
+
+            if (item[0] != null) {
+                weeklyOrderCount.setDate(item[0].toString());
+                weeklyOrderCount.setTotalSalesAmount(Double.parseDouble(item[1].toString()));
+            } else {
+                weeklyOrderCount.setDate(simpleDateFormat.format(firstDayOfWeek));
+                weeklyOrderCount.setTotalSalesAmount(0.00);
+            }
             weeklySales.add(weeklyOrderCount);
+
         }
         // monthly sales
 
@@ -1274,8 +1280,13 @@ public class StoreReportsController {
         for (Object[] value : monthlyOrder) {
 
             OrderCount monthlyOrderCount = new OrderCount();
-            monthlyOrderCount.setDate(value[0].toString());
-            monthlyOrderCount.setTotalSalesAmount(Double.parseDouble(value[1].toString()));
+            if (value[0] != null) {
+                monthlyOrderCount.setDate(value[0].toString());
+                monthlyOrderCount.setTotalSalesAmount(Double.parseDouble(value[1].toString()));
+            } else {
+                monthlyOrderCount.setDate(simpleDateFormat.format(firstDayOfMonth));
+                monthlyOrderCount.setTotalSalesAmount(0.00);
+            }
             monthlySales.add(monthlyOrderCount);
 
         }
@@ -1300,8 +1311,13 @@ public class StoreReportsController {
         for (Object[] value : yearlyOrder) {
 
             OrderCount yearlyOrderCount = new OrderCount();
-            yearlyOrderCount.setDate(value[0].toString());
-            yearlyOrderCount.setTotalSalesAmount(Double.parseDouble(value[1].toString()));
+            if (value[0] != null) {
+                yearlyOrderCount.setDate(value[0].toString());
+                yearlyOrderCount.setTotalSalesAmount(Double.parseDouble(value[1].toString()));
+            }else{
+                yearlyOrderCount.setDate(simpleDateFormat.format(firstDayOfYear));
+                yearlyOrderCount.setTotalSalesAmount(0.00);
+            }
             yearlyOrders.add(yearlyOrderCount);
 
         }
