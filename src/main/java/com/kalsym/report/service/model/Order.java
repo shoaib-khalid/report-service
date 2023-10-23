@@ -32,7 +32,7 @@ public class Order implements Serializable {
     private Float storeServiceCharges;
     private Float appliedDiscount;
     private Float deliveryDiscount;
-
+    private Float paymentFee;
 
     private Float subTotal;
     private Float total;

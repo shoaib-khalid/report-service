@@ -62,7 +62,7 @@ public class StoreSettlement implements Serializable {
     private String referenceId;
     private String serviceType;
     private String channel;
-
+    private Double totalPaymentFee;
     public String toString() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(this);

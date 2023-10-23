@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -49,7 +50,8 @@ public class ReportsGenerator {
         return formatter.parse(formatter.format(new Date()));
     }
 
-    @Scheduled(cron = "${schudler.dailysales.cron:0 58 23 * * ?}")
+    @Scheduled(cron = "${scheduler.dailysales.cron:0 58 23 * * ?}")
+//    @Scheduled(cron = "${scheduler.dailysales.cron:0 * * ? * *}")
     public void dailySalesScheduler() throws ParseException {
         storeDailySalesRepository.insertDailySales();
         Logger.application.info("inserted daily store sales");
@@ -85,37 +87,52 @@ public class ReportsGenerator {
 
             if (null == dailySale.getSettlementReferenceId()) {
 
-                int dailySaleCycle = getCycle(dailySale.getDate());
 
-                int dailySaleDayOfWeek = getDayOfWeek(dailySale.getDate());
                 Logger.application.info("dailySaleDate: " + dailySale.getDate());
 
-                Logger.application.info("dailySaleCycle: " + dailySaleCycle);
-                Logger.application.info("dailySaleDayOfWeek: " + dailySaleDayOfWeek);
+                Date dailySaleDate = dailySale.getDate();
 
-                Date dailySaleStartDate = getStartDate(dailySaleCycle, dailySaleDayOfWeek, dailySale.getDate());
-                Date dailySaleEndDate = getEndDate(dailySaleCycle, dailySaleDayOfWeek, dailySale.getDate());
-                Date settlementDate = getSettlementDate(dailySaleEndDate, dailySaleCycle);
+                // Create a SimpleDateFormat for yyyy-MM-dd HH:mm format
+                SimpleDateFormat sdfWithTime = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                SimpleDateFormat sdfWithoutTime = new SimpleDateFormat("yyyy-MM-dd");
 
+                // Create a Calendar instance and set it to your original date
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(dailySaleDate);
+
+                // Set cycle start time to 00:00
+                calendar.set(Calendar.HOUR_OF_DAY, 0);
+                calendar.set(Calendar.MINUTE, 0);
+                Date cycleStartDate = calendar.getTime();
+
+                // Set cycle end time to 23:59
+                calendar.set(Calendar.HOUR_OF_DAY, 23);
+                calendar.set(Calendar.MINUTE, 59);
+                Date cycleEndDate = calendar.getTime();
+
+                // Calculate settlement date as 3 days from cycle start
+                calendar.setTime(cycleStartDate);
+                calendar.add(Calendar.DAY_OF_MONTH, 3);
+                Date settlementDate = calendar.getTime();
+
+                // Format the dates into yyyy-MM-dd HH:mm strings
+                String formattedCycleStartDate = sdfWithTime.format(cycleStartDate);
+                String formattedCycleEndDate = sdfWithTime.format(cycleEndDate);
+                String formattedSettlementDate = sdfWithoutTime.format(settlementDate);
 
                 Date currentDate = new Date();
 
                 SettlementStatus status = SettlementStatus.RUNNING;
-                if (currentDate.after(dailySaleEndDate)) {
-                    status = SettlementStatus.CLOSED;
-                }
+//                if (currentDate.after(dailySaleEndDate)) {
+//                    status = SettlementStatus.CLOSED;
+//                }
                 if (currentDate.after(settlementDate)) {
                     status = SettlementStatus.AVAILABLE;
                 }
 
                 String storeId = dailySale.getStoreId();
 
-
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                String startDate = simpleDateFormat.format(dailySaleStartDate);
-                String endDate = simpleDateFormat.format(dailySaleEndDate);
-                String settlement = simpleDateFormat.format(settlementDate);
-                Optional<StoreSettlement> dailySalesStoreSettlementOpt = storeSettlementsRepository.findByStoreIdAndCycleStartDateAndCycleEndDate(storeId, startDate, endDate);
+                Optional<StoreSettlement> dailySalesStoreSettlementOpt = storeSettlementsRepository.findByStoreIdAndCycleStartDateAndCycleEndDate(storeId, formattedCycleStartDate, formattedCycleEndDate);
 
                 if (dailySalesStoreSettlementOpt.isPresent()) {
                     StoreSettlement dailySalesStoreSettlement = dailySalesStoreSettlementOpt.get();
@@ -145,6 +162,7 @@ public class ReportsGenerator {
                     dailySalesStoreSettlement.setTotalAppliedDiscount(dailySalesStoreSettlement.getTotalAppliedDiscount() + dailySale.getTotalAppliedDiscount());
                     dailySalesStoreSettlement.setTotalDeliveryDiscount(dailySalesStoreSettlement.getTotalDeliveryDiscount() + dailySale.getTotalDeliveryDiscount());
                     dailySale.setSettlementReferenceId(dailySalesStoreSettlement.getReferenceId());
+                    dailySalesStoreSettlement.setTotalPaymentFee(dailySalesStoreSettlement.getTotalPaymentFee() + dailySale.getTotalPaymentFee());
 
                     try {
                         storeDailySalesRepository.save(dailySale);
@@ -162,7 +180,7 @@ public class ReportsGenerator {
                     dailySalesStoreSettlement.setTotalStoreShare(dailySale.getAmountEarned());
                     dailySalesStoreSettlement.setTotalTransactionValue(dailySale.getTotalAmount());
                     dailySalesStoreSettlement.setSettlementStatus(status);
-                    dailySalesStoreSettlement.setSettlementDate(settlement);
+                    dailySalesStoreSettlement.setSettlementDate(formattedSettlementDate);
                     dailySalesStoreSettlement.setTotalServiceFee(dailySale.getTotalServiceCharge());
                     dailySalesStoreSettlement.setTotalDeliveryFee(dailySale.getTotalDeliveryFee());
                     dailySalesStoreSettlement.setServiceType(dailySale.getServiceType());
@@ -170,6 +188,7 @@ public class ReportsGenerator {
                     dailySalesStoreSettlement.setTotalSelfDeliveryFee(dailySale.getTotalSelfDeliveryFee());
                     dailySalesStoreSettlement.setTotalAppliedDiscount(dailySale.getTotalAppliedDiscount());
                     dailySalesStoreSettlement.setTotalDeliveryDiscount(dailySale.getTotalDeliveryDiscount());
+                    dailySalesStoreSettlement.setTotalPaymentFee(dailySale.getTotalPaymentFee());
 
                     Logger.application.info("Delivery fee if cannot find the row : " + dailySalesStoreSettlement.getTotalDeliveryFee());
 
@@ -178,22 +197,22 @@ public class ReportsGenerator {
                     String settlementStoreNameAbbreviation = "";
                     String settlementStoreCountryId = "";
                     if (storeOpt.isPresent()) {
-
-                        Store settlementStore = storeRepository.getOne(storeId);
+                        Logger.application.info("Found store : " + storeId);
+                        Store settlementStore = storeOpt.get();
 //                        dailySalesStoreSettlement.setStore(settlementStore);
                         dailySalesStoreSettlement.setStoreId(settlementStore.getId());
                         settlementStoreNameAbbreviation = settlementStore.getNameAbreviation();
                         settlementStoreCountryId = settlementStore.getRegionCountryStateId();
                         dailySalesStoreSettlement.setStoreName(settlementStore.getName());
                         dailySalesStoreSettlement.setClientId(settlementStore.getClientId());
-                        dailySalesStoreSettlement.setCycle(dailySaleCycle + "");
+                        dailySalesStoreSettlement.setCycle("0");
                     }
 
                     String settlementReferenceId = TxIdUtil.generateReferenceId(settlementStoreCountryId + settlementStoreNameAbbreviation);
 
                     dailySalesStoreSettlement.setReferenceId(settlementReferenceId);
-                    dailySalesStoreSettlement.setCycleStartDate(startDate);
-                    dailySalesStoreSettlement.setCycleEndDate(endDate);
+                    dailySalesStoreSettlement.setCycleStartDate(formattedCycleStartDate);
+                    dailySalesStoreSettlement.setCycleEndDate(formattedCycleEndDate);
 
                     dailySale.setSettlementReferenceId(settlementReferenceId);
 
