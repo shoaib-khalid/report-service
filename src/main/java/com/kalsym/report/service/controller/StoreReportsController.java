@@ -403,15 +403,16 @@ public class StoreReportsController {
         Logger.application.info(Logger.pattern, ReportServiceApplication.VERSION, logprefix,
                 "before from : " + from + ", to : " + to);
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         String startDate = simpleDateFormat.format(from);
-        String endDate = simpleDateFormat.format(to);
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(to);
         calendar.add(Calendar.HOUR, 23);
         calendar.add(Calendar.MINUTE, 59);
         to = calendar.getTime();
+        String endDate = simpleDateFormat.format(to);
+
         Logger.application.info(Logger.pattern, ReportServiceApplication.VERSION, logprefix,
                 "before from : " + startDate + ", to : " + endDate);
         if (sortBy.contains("from")) {

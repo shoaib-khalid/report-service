@@ -37,23 +37,23 @@ public class Store implements Serializable {
 
 
     public String getNameAbreviation() {
-        String abbreviation = "";
+        StringBuilder abbreviation = new StringBuilder();
 
         if (name.length() <= 3) {
-            abbreviation = name;
+            abbreviation = new StringBuilder(name);
         } else {
             String[] myName = name.split(" ");
 
             for (int i = 0; i < myName.length; i++) {
                 String s = myName[i];
-                abbreviation = abbreviation + s.charAt(0);
+                abbreviation.append(s.charAt(0));
 
                 if (abbreviation.length() == 3) {
                     break;
                 }
             }
         }
-        return abbreviation;
+        return abbreviation.toString();
     }
 }
 
