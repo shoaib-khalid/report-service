@@ -1494,6 +1494,8 @@ public class StoreReportsController {
                 predicates.add(builder.equal(root.get("channel"), "DELIVERIN"));
             } else if (channel.equals("PAYHUB2U")) {
                 predicates.add(builder.equal(root.get("channel"), "PAYHUB2U"));
+            } else if (channel.equals("EKEDAI")) {
+                predicates.add(builder.equal(root.get("channel"), "EKEDAI"));
             }
 //            predicates.add(builder.equal(root.get("paymentStatus"), "PAID"));
             if (!countryCode.isEmpty())
@@ -1572,6 +1574,8 @@ public class StoreReportsController {
                 predicates.add(builder.equal(root.get("channel"), "DELIVERIN"));
             } else if (channel.equals("PAYHUB2U")) {
                 predicates.add(builder.equal(root.get("channel"), "PAYHUB2U"));
+            } else if (channel.equals("EKEDAI")) {
+                predicates.add(builder.equal(root.get("channel"), "EKEDAI"));
             }
 
             if (!countryCode.isEmpty())
