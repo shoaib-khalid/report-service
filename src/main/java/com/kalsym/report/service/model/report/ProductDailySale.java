@@ -2,32 +2,49 @@ package com.kalsym.report.service.model.report;
 
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import javax.persistence.Entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.kalsym.report.service.model.Customer;
+import com.kalsym.report.service.model.Product;
+import com.kalsym.report.service.model.Store;
+import lombok.*;
+
 import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
+import javax.persistence.*;
 
 @Entity
 @Getter
 @Setter
-@IdClass(StoreDailySaleIdentity.class)
+@IdClass(StoreDailyTopProductIdentity.class)
 @ToString
 @Table(name = "product_daily_sale")
+@NoArgsConstructor
 public class ProductDailySale implements Serializable {
 
     @Id
     @Temporal(TemporalType.DATE)
     private Date date;
+
     @Id
     private String productId;
 
     private Integer totalOrders;
-    private String storeId;
+    //    private String storeId;
+    @Id
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "storeId", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Store store;
+
+
     private String name;
+
+    Long ranking;
+
+    private String serviceType;
 
 }

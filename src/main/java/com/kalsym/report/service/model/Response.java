@@ -1,6 +1,8 @@
 package com.kalsym.report.service.model;
 
 import io.swagger.models.auth.In;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Set;
@@ -37,6 +39,8 @@ public class Response {
 
     }
 
+   @Getter
+   @Setter
     public static class Sales {
         public String storeId;
         public String merchantName;
@@ -49,50 +53,16 @@ public class Response {
         public String orderStatus;
         public String deliveryStatus;
         public Float commission;
-
-        public String getStoreId() { return storeId; }
-
-        public void setStoreId(String storeId) { this.storeId = storeId; }
-
-        public String getMerchantName() { return merchantName; };
-
-        public void setMerchantName(String merchantName) { this.merchantName = merchantName; }
-
-        public String getStoreName() { return storeName; }
-
-        public void setStoreName(String storeName) { this.storeName = storeName; }
-
-        public Float getTotal() { return  total; }
-
-        public void setTotal(Float total) { this.total = total; }
-
-        public Float getServiceCharge() { return serviceCharge; }
-
-        public void setServiceCharge(Float serviceCharge) { this.serviceCharge = serviceCharge; }
-
-        public Float getDeliveryCharge() { return deliveryCharge; }
-
-        public void setDeliveryCharge(Float deliveryCharge) { this.deliveryCharge = deliveryCharge; }
-
-        public String getCustomerName() { return customerName; }
-
-        public void setCustomerName(String customerName) { this.customerName = customerName; }
-
-        public String getOrderStatus() { return orderStatus; }
-
-        public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
-
-        public String getDeliveryStatus() { return deliveryStatus; }
-
-        public void setDeliveryStatus(String deliveryStatus) { this.deliveryStatus = deliveryStatus; }
-
-        public Float getCommission() { return  commission; }
-
-        public void setCommission(Float commission) { this.commission = commission; }
-
-        public Float getSubTotal() { return subTotal; }
-
-        public void setSubTotal(Float subTotal) { this.subTotal = subTotal; }
+        public Float selfDeliveryCharge;
+        public Float orderDiscount;
+        public Float deliveryDiscount;
+        public Float storeVoucherDiscount;
+        public Float platformDiscount;
+        public String voucherCode;
+        public Integer noOfOrderItem;
+        public String serviceType;
+        public String channel;
+        
     }
 
     public static class DetailedSalesReportResponse {

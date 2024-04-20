@@ -1,23 +1,21 @@
 package com.kalsym.report.service.model.report;
 
-import java.io.Serializable;
-import java.util.Date;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.kalsym.report.service.model.Store;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Getter
 @Setter
 @IdClass(StoreDailySaleIdentity.class)
 @ToString
-@Table(name = "store_daily_sale")
+@Table(name = "store_daily_sale2")
 public class StoreDailySale implements Serializable {
 
     @Id
@@ -34,11 +32,21 @@ public class StoreDailySale implements Serializable {
     private Double totalServiceCharge;
     private Double totalAmount;
     private Double totalDeliveryFee;
-    @OneToOne(fetch = FetchType.LAZY)
+    private Double totalSelfDeliveryFee;
+    private Double totalAppliedDiscount;
+    private Double totalDeliveryDiscount;
+    private String serviceType;
+    private String channel;
+    private Double totalPaymentFee;
+
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "storeId", insertable = false, updatable = false)
+//    @Fetch(FetchMode.JOIN)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "storeId", insertable = false, updatable = false)
-    @Fetch(FetchMode.JOIN)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Store store;
-    
+
     private String settlementReferenceId;
 
 }

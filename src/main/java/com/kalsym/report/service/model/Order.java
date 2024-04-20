@@ -1,14 +1,16 @@
 package com.kalsym.report.service.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.*;
 
+import javax.persistence.*;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
@@ -24,14 +26,55 @@ public class Order implements Serializable {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
-    private String storeId;
+
+    private Float klCommission;
+    private Float deliveryCharges;
+    private Float storeServiceCharges;
+    private Float appliedDiscount;
+    private Float deliveryDiscount;
+    private Float paymentFee;
+
     private Float subTotal;
     private Float total;
+    private Float storeShare;
     private String completionStatus;
     private String paymentStatus;
     private String customerNotes;
     private String privateAdminNotes;
     private String cartId;
-    private String customerId;
-    private String created;
+    private String deliveryType;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customerId" )
+    @NotFound(action = NotFoundAction.IGNORE)
+    private Customer customer;
+
+    private String orderGroupId;
+
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "storeId", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Store store;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "voucherId", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Voucher voucher;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date created;
+
+    private String serviceType;
+
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staffId" )
+    @NotFound(action = NotFoundAction.IGNORE)
+    private StoreUser staff;
+
+
+    private String paymentType;
+
+    private String paymentChannel;
 }

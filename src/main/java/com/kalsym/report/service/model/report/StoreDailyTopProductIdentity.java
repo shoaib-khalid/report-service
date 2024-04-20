@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
+
+import com.kalsym.report.service.model.Store;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,12 +22,18 @@ public class StoreDailyTopProductIdentity implements Serializable {
 
     private Date date;
     private String productId;
-    private String storeId;
+    private Store store;
 
-    public StoreDailyTopProductIdentity(Date date, String productId, String storeId) {
+    public StoreDailyTopProductIdentity(Date date, String productId) {
         this.date = date;
         this.productId = productId;
-        this.storeId = storeId;
+    }
+
+
+    public StoreDailyTopProductIdentity(Date date, String productId, Store store) {
+        this.date = date;
+        this.productId = productId;
+        this.store = store;
     }
 
     @Override
@@ -33,7 +41,7 @@ public class StoreDailyTopProductIdentity implements Serializable {
         int hash = 3;
         hash = 79 * hash + Objects.hashCode(this.date);
         hash = 79 * hash + Objects.hashCode(this.productId);
-        hash = 79 * hash + Objects.hashCode(this.storeId);
+        hash = 79 * hash + Objects.hashCode(this.store);
         return hash;
     }
 
@@ -52,7 +60,7 @@ public class StoreDailyTopProductIdentity implements Serializable {
         if (!Objects.equals(this.productId, other.productId)) {
             return false;
         }
-        if (!Objects.equals(this.storeId, other.storeId)) {
+        if (!Objects.equals(this.store, other.store)) {
             return false;
         }
         if (!Objects.equals(this.date, other.date)) {
